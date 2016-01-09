@@ -3,9 +3,6 @@
             [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]))
 
-(enable-console-print!)
-
-(println "moo")
 
 (defui PlanetMonitor
   Object
