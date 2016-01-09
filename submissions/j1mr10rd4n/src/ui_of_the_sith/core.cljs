@@ -3,6 +3,8 @@
             [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]))
 
+(def app-state (atom {:obi-wan-planet "Earth"}))
+
 (defn planet-monitor-text
   [planet]
   (str "Obi-Wan currently on " planet))
@@ -10,10 +12,13 @@
 (defui PlanetMonitor
   Object
   (render [this]
-    (dom/h1 nil (planet-monitor-text (get (om/props this) :obi-wan-planet)))))
+    (let [{:keys [obi-wan-planet]} (om/props this)]
+      (dom/h1 nil (planet-monitor-text (get (om/props this) :obi-wan-planet))))))
 
 (def planet-monitor (om/factory PlanetMonitor))
 
-(js/ReactDOM.render
-  (planet-monitor {:obi-wan-planet "Earth"})
-  (gdom/getElement "app"))
+(def reconciler
+  (om/reconciler {:state app-state}))
+
+(om/add-root! reconciler
+              PlanetMonitor (gdom/getElement "app"))
