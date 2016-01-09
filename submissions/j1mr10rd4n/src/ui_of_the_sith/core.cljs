@@ -5,11 +5,20 @@
 
 (def app-state (atom {:obi-wan-planet "Earth"}))
 
+(defn read [{:keys [state] :as env} key params]
+  (let [st @state]
+    (if-let [[_ value] (find st key)]
+      {:value value}
+      {:value :not-found})))
+
 (defn planet-monitor-text
   [planet]
   (str "Obi-Wan currently on " planet))
 
 (defui PlanetMonitor
+  static om/IQuery
+  (query [this]
+         [:obi-wan-planet])
   Object
   (render [this]
     (let [{:keys [obi-wan-planet]} (om/props this)]
@@ -18,7 +27,8 @@
 (def planet-monitor (om/factory PlanetMonitor))
 
 (def reconciler
-  (om/reconciler {:state app-state}))
+  (om/reconciler {:state app-state
+                  :parser (om/parser {:read read})}))
 
 (om/add-root! reconciler
               PlanetMonitor (gdom/getElement "app"))
