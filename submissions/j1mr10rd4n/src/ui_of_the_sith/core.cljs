@@ -5,22 +5,6 @@
             [om.dom :as dom])
   (:import goog.net.WebSocket))
 
-(def socket
-  (let [socket (WebSocket.)]
-    (ev/listen socket
-               #js [WebSocket.EventType.CLOSED
-                    WebSocket.EventType.ERROR
-                    WebSocket.EventType.MESSAGE
-                    WebSocket.EventType.OPENED]
-               (fn [e]
-                 (let [log-message-content (condp = (.-type e)
-                                                  WebSocket.EventType.MESSAGE (.-message e)
-                                                  WebSocket.EventType.ERROR (.-data e)
-                                                  nil)]
-                   (.log js/console 
-                         (clojure.string/join " " [(.-type e) log-message-content])))))
-    socket))
-
 (def base-url "ws://localhost:4000")
 
 (def app-state (atom {:obi-wan-planet "Earth"}))
@@ -36,6 +20,27 @@
     {:value {:keys [:obi-wan-planet]}
      :action #(swap! app-state assoc-in [:obi-wan-planet] (state :obi-wan-planet))}
     {:value :not-found}))
+
+(def socket-parser (om/parser {:mutate mutate}))
+
+(def socket
+  (let [socket (WebSocket.)]
+    (ev/listen socket
+               #js [WebSocket.EventType.CLOSED
+                    WebSocket.EventType.ERROR
+                    WebSocket.EventType.MESSAGE
+                    WebSocket.EventType.OPENED]
+               (fn [e]
+                 (let [log-message-content (condp = (.-type e)
+                                                  WebSocket.EventType.MESSAGE (.-message e)
+                                                  WebSocket.EventType.ERROR (.-data e)
+                                                  nil)]
+                   (if (= (.-type e) WebSocket.EventType.MESSAGE)
+                     (let [planet-name (.-name (JSON.parse (.-message e)))]
+                       (socket-parser {:state {:obi-wan-planet planet-name}} '[(update-planet)])))
+                   (.log js/console 
+                         (clojure.string/join " " [(.-type e) log-message-content])))))
+    socket))
 
 (defn planet-monitor-text
   [planet]
