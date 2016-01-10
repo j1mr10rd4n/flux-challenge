@@ -1,7 +1,27 @@
 (ns ui-of-the-sith.core
   (:require [goog.dom :as gdom]
+            [goog.events :as ev]
             [om.next :as om :refer-macros [defui]]
-            [om.dom :as dom]))
+            [om.dom :as dom])
+  (:import goog.net.WebSocket))
+
+(def socket
+  (let [socket (WebSocket.)]
+    (ev/listen socket
+               #js [WebSocket.EventType.CLOSED
+                    WebSocket.EventType.ERROR
+                    WebSocket.EventType.MESSAGE
+                    WebSocket.EventType.OPENED]
+               (fn [e]
+                 (let [log-message-content (condp = (.-type e)
+                                                  WebSocket.EventType.MESSAGE (.-message e)
+                                                  WebSocket.EventType.ERROR (.-data e)
+                                                  nil)]
+                   (.log js/console 
+                         (clojure.string/join " " [(.-type e) log-message-content])))))
+    socket))
+
+(def base-url "ws://localhost:4000")
 
 (def app-state (atom {:obi-wan-planet "Earth"}))
 
@@ -26,6 +46,10 @@
   (query [this]
          [:obi-wan-planet])
   Object
+  (componentWillMount [this]
+    (.open socket base-url))
+  (componentWillUnmount [this]
+    (.close socket))
   (render [this]
     (let [{:keys [obi-wan-planet]} (om/props this)]
       (dom/h1 nil (planet-monitor-text (get (om/props this) :obi-wan-planet))))))
