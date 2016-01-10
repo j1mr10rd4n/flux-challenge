@@ -57,11 +57,12 @@
     (.close socket))
   (render [this]
     (let [{:keys [obi-wan-planet]} (om/props this)]
-      (dom/h1 nil (planet-monitor-text (get (om/props this) :obi-wan-planet))))))
+      (dom/h1 #js {:className "css-planet-monitor"} 
+              (planet-monitor-text (get (om/props this) :obi-wan-planet))))))
 
 (def reconciler
   (om/reconciler {:state app-state
                   :parser (om/parser {:read read})}))
 
 (om/add-root! reconciler
-              PlanetMonitor (gdom/getElement "app"))
+              PlanetMonitor (gdom/getElementByClass "css-root" (gdom/getElement "app")))
