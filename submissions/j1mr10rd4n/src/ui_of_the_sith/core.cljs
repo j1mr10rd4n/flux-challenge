@@ -24,8 +24,6 @@
     (let [{:keys [obi-wan-planet]} (om/props this)]
       (dom/h1 nil (planet-monitor-text (get (om/props this) :obi-wan-planet))))))
 
-(def planet-monitor (om/factory PlanetMonitor))
-
 (def reconciler
   (om/reconciler {:state app-state
                   :parser (om/parser {:read read})}))
