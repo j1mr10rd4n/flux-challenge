@@ -21,7 +21,13 @@
      :action #(swap! app-state assoc-in [:obi-wan-planet] (state :obi-wan-planet))}
     {:value :not-found}))
 
-(def socket-parser (om/parser {:mutate mutate}))
+(defn planet-monitor-text
+  [planet]
+  (str "Obi-Wan currently on " planet))
+
+(def reconciler
+  (om/reconciler {:state app-state
+                  :parser (om/parser {:read read :mutate mutate})}))
 
 (def socket
   (let [socket (WebSocket.)]
@@ -37,14 +43,10 @@
                                                   nil)]
                    (if (= (.-type e) WebSocket.EventType.MESSAGE)
                      (let [planet-name (.-name (JSON.parse (.-message e)))]
-                       (socket-parser {:state {:obi-wan-planet planet-name}} '[(update-planet)])))
+                       (om/transact! reconciler `[(update-planet {:obi-wan-planet ~planet-name})])))
                    (.log js/console 
                          (clojure.string/join " " [(.-type e) log-message-content])))))
     socket))
-
-(defn planet-monitor-text
-  [planet]
-  (str "Obi-Wan currently on " planet))
 
 (defui PlanetMonitor
   static om/IQuery
@@ -59,10 +61,6 @@
     (let [{:keys [obi-wan-planet]} (om/props this)]
       (dom/h1 #js {:className "css-planet-monitor"} 
               (planet-monitor-text (get (om/props this) :obi-wan-planet))))))
-
-(def reconciler
-  (om/reconciler {:state app-state
-                  :parser (om/parser {:read read})}))
 
 (om/add-root! reconciler
               PlanetMonitor (gdom/getElementByClass "css-root" (gdom/getElement "app")))
