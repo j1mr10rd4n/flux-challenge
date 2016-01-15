@@ -18,7 +18,7 @@
 (defn mutate [{:keys [state] as :env} key params]
   (if (= 'ui-of-the-sith.core/update-planet key)
     {:value {:keys [:obi-wan-planet]}
-     :action #(swap! app-state assoc-in [:obi-wan-planet] (params :obi-wan-planet))}
+     :action #(swap! state assoc-in [:obi-wan-planet] (params :obi-wan-planet))}
     {:value :not-found}))
 
 (defn planet-monitor-text
@@ -54,10 +54,14 @@
          [:obi-wan-planet])
   Object
   (componentWillMount [this]
+    (.log js/console "componentWillMount - this: " this)
     (.open socket base-url))
   (componentWillUnmount [this]
+    (.log js/console "componentWillUnmount - this: " this)
     (.close socket))
   (render [this]
+    (.log js/console "render - this: " this)
+    (.log js/console "render - this: " this)
     (let [{:keys [obi-wan-planet]} (om/props this)]
       (dom/h1 #js {:className "css-planet-monitor"} 
               (planet-monitor-text (get (om/props this) :obi-wan-planet))))))
