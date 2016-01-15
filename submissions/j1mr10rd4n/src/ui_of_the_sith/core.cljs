@@ -2,24 +2,13 @@
   (:require [goog.dom :as gdom]
             [goog.events :as ev]
             [om.next :as om :refer-macros [defui]]
-            [om.dom :as dom])
+            [om.dom :as dom]
+            [ui-of-the-sith.parser :as p])
   (:import goog.net.WebSocket))
 
 (def base-url "ws://localhost:4000")
 
 (def app-state (atom {:obi-wan-planet "Earth"}))
-
-(defn read [{:keys [state] :as env} key params]
-  (let [st @state]
-    (if-let [[_ value] (find st key)]
-      {:value value}
-      {:value :not-found})))
-
-(defn mutate [{:keys [state] as :env} key params]
-  (if (= 'ui-of-the-sith.core/update-planet key)
-    {:value {:keys [:obi-wan-planet]}
-     :action #(swap! state assoc-in [:obi-wan-planet] (params :obi-wan-planet))}
-    {:value :not-found}))
 
 (defn planet-monitor-text
   [planet]
@@ -27,7 +16,7 @@
 
 (def reconciler
   (om/reconciler {:state app-state
-                  :parser (om/parser {:read read :mutate mutate})}))
+                  :parser (om/parser {:read p/read :mutate p/mutate})}))
 
 (def socket
   (let [socket (WebSocket.)]
