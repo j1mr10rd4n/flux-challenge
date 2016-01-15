@@ -31,7 +31,7 @@
                                                   WebSocket.EventType.ERROR (.-data e)
                                                   nil)]
                    (if (= (.-type e) WebSocket.EventType.MESSAGE)
-                     (let [planet-name (.-name (JSON.parse (.-message e)))]
+                     (let [planet-name (.. (-> (.. e -message) JSON.parse) -name)]
                        (om/transact! reconciler `[(update-planet {:obi-wan-planet ~planet-name})])))
                    (.log js/console 
                          (clojure.string/join " " [(.-type e) log-message-content])))))
