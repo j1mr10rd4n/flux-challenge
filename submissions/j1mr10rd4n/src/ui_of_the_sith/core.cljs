@@ -1,57 +1,20 @@
 (ns ui-of-the-sith.core
   (:require [goog.dom :as gdom]
-            [goog.events :as ev]
             [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
-            [ui-of-the-sith.parser :as p])
-  (:import goog.net.WebSocket))
-
-(def base-url "ws://localhost:4000")
+            [ui-of-the-sith.parser :as p]
+            [ui-of-the-sith.planet-monitor :as pm]))
 
 (def app-state (atom {:obi-wan-planet "Earth"}))
-
-(defn planet-monitor-text
-  [planet]
-  (str "Obi-Wan currently on " planet))
 
 (def reconciler
   (om/reconciler {:state app-state
                   :parser (om/parser {:read p/read :mutate p/mutate})}))
 
-(def socket
-  (let [socket (WebSocket.)]
-    (ev/listen socket
-               #js [WebSocket.EventType.CLOSED
-                    WebSocket.EventType.ERROR
-                    WebSocket.EventType.MESSAGE
-                    WebSocket.EventType.OPENED]
-               (fn [e]
-                 (let [log-message-content (condp = (.-type e)
-                                                  WebSocket.EventType.MESSAGE (.-message e)
-                                                  WebSocket.EventType.ERROR (.-data e)
-                                                  nil)]
-                   (if (= (.-type e) WebSocket.EventType.MESSAGE)
-                     (let [planet-name (-> e (aget "message") JSON.parse (aget "name"))]
-                       (om/transact! reconciler `[(update-planet {:obi-wan-planet ~planet-name})])))
-                   (.log js/console 
-                         (clojure.string/join " " [(.-type e) log-message-content])))))
-    socket))
-
-(defui PlanetMonitor
-  static om/IQuery
-  (query [this]
-         [:obi-wan-planet])
+(defui App
   Object
-  (componentWillMount [this]
-    (om/set-state! this {:socket socket})
-    (.open ((om/get-state this) :socket) base-url))
-  (componentWillUnmount [this]
-    (let [socket ((om/get-state this) :socket)]
-      (.close socket)))
-  (render [this]
-    (let [{:keys [obi-wan-planet]} (om/props this)]
-      (dom/h1 #js {:className "css-planet-monitor"} 
-              (planet-monitor-text (get (om/props this) :obi-wan-planet))))))
+  (render [this] 
+    (dom/div nil (pm/planet-monitor (om/props this)))))
 
 (om/add-root! reconciler
-              PlanetMonitor (gdom/getElementByClass "css-root" (gdom/getElement "app")))
+              App (gdom/getElementByClass "css-root" (gdom/getElement "app")))
