@@ -43,9 +43,11 @@
          [:obi-wan-planet])
   Object
   (componentWillMount [this]
-    (.open socket base-url))
+    (om/set-state! this {:socket socket})
+    (.open ((om/get-state this) :socket) base-url))
   (componentWillUnmount [this]
-    (.close socket))
+    (let [socket ((om/get-state this) :socket)]
+      (.close socket)))
   (render [this]
     (let [{:keys [obi-wan-planet]} (om/props this)]
       (dom/h1 #js {:className "css-planet-monitor"} 
