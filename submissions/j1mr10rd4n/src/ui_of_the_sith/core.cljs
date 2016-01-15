@@ -18,7 +18,7 @@
 (defn mutate [{:keys [state] as :env} key params]
   (if (= 'ui-of-the-sith.core/update-planet key)
     {:value {:keys [:obi-wan-planet]}
-     :action #(swap! app-state assoc-in [:obi-wan-planet] (state :obi-wan-planet))}
+     :action #(swap! app-state assoc-in [:obi-wan-planet] (params :obi-wan-planet))}
     {:value :not-found}))
 
 (defn planet-monitor-text
