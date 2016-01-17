@@ -21,9 +21,10 @@
                                                   nil)]
                    (if (= (.-type e) WebSocket.EventType.MESSAGE)
                      (let [planet-name (-> e (aget "message") JSON.parse (aget "name"))]
+                       (.log js/console 
+                         (clojure.string/join " " [(.-type e) log-message-content]))
                        (callback planet-name)))
-                   (.log js/console 
-                         (clojure.string/join " " [(.-type e) log-message-content])))))
+                   )))
     socket))
 
 (defn planet-monitor-text
