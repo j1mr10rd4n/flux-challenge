@@ -16,8 +16,9 @@
   Object
   (render [this] 
     (dom/div #js {:className "css-root"}
-      (let [props (om/props this)]
-        [(pm/planet-monitor props)
+      (let [props (om/props this)
+          {:keys [:obi-wan-planet]} props]
+        [(pm/planet-monitor obi-wan-planet)
         (sl/scrollable-list props)]))))
 
 (om/add-root! reconciler

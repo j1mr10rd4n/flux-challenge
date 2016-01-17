@@ -45,8 +45,8 @@
     (let [socket ((om/get-state this) :socket)]
       (.close socket)))
   (render [this]
-    (let [{:keys [obi-wan-planet]} (om/props this)]
+    (let [obi-wan-planet (om/props this)]
       (dom/h1 #js {:className "css-planet-monitor"} 
-              (planet-monitor-text (get (om/props this) :obi-wan-planet))))))
+              (planet-monitor-text obi-wan-planet)))))
 
 (def planet-monitor (om/factory PlanetMonitor nil))
