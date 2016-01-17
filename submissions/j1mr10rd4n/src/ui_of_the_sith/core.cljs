@@ -15,11 +15,11 @@
 (defui App
   Object
   (render [this] 
-    (dom/div #js {:className "css-root"}
-      (let [props (om/props this)
+    (let [props (om/props this)
           {:keys [:obi-wan-planet]} props]
-        [(pm/planet-monitor obi-wan-planet)
-        (sl/scrollable-list props)]))))
+      (dom/div #js {:className "css-root"}
+        (pm/planet-monitor obi-wan-planet)
+        (sl/scrollable-list props)))))
 
 (om/add-root! reconciler
               App (gdom/getElement "app"))
