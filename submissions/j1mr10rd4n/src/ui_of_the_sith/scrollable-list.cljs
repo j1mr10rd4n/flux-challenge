@@ -9,6 +9,13 @@
       (str button-class " css-button-disabled")
       button-class)))
 
+(defn scroll-button-click
+  [scroll-button direction homeworld-alert? e]
+  (if homeworld-alert?
+    (doto e (.preventDefault) (.stopPropagation))
+    (.log js/console "scroll-button-click " e)
+  ))
+
 (defui ScrollButton
   Object
   (render [this]
@@ -17,7 +24,8 @@
     (let [props (om/props this)
           direction (props :direction)
           homeworld-alert? (props :homeworld-alert?)]
-    (dom/button #js {:className (scroll-button-css-class direction homeworld-alert?)}))))
+    (dom/button #js {:className (scroll-button-css-class direction homeworld-alert?)
+                     :onClick #(scroll-button-click this direction homeworld-alert? %)}))))
 
 (def scroll-button (om/factory ScrollButton))
 
