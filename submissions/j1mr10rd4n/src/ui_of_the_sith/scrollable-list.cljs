@@ -2,29 +2,38 @@
   (:require [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]))
 
-(defui ScrollButtons
+(defui ScrollButton
   Object
-  (render [this] 
-          (dom/div #js {:className "css-scroll-buttons"}
-                   (dom/button #js {:className "css-button-up"})
-                   (dom/button #js {:className "css-button-down"}))))
+  (render [this]
+    ;(.log js/console "foo")
+    ;(.log js/console (om/props this))
+    (dom/button #js {:className (str "css-button-" ((om/props this) :direction))})))
 
-(def scroll-buttons (om/factory ScrollButtons nil))
+(def scroll-button (om/factory ScrollButton))
 
 (defui Slot
   Object
   (render [this]
-    (dom/li #js {:className "css-slot"}
-            (dom/h3 nil "Jorak Uln")
-            (dom/h6 nil "Homeworld: Korriban"))))
+    (let [props (om/props this)
+          name (props :name)
+          homeworld (props :homeworld)]
+      (dom/li #js {:className "css-slot"}
+          (dom/h3 nil name)
+          (dom/h6 nil (str "Homeworld: " homeworld))))))
 
-(def slot (om/factory Slot nil))
+(def slot (om/factory Slot))
 
 (defui ScrollableList
+  static om/IQuery
+  (query [this]
+         `[:dark-jedis])
   Object
   (render [this]
-    (dom/section #js {:className "css-scrollable-list"} 
-                 (apply dom/ul #js {:className "css-slots"} (map slot (range 5)))
-                 (scroll-buttons {}))))
+    (let [props (om/props this)
+          dark-jedis (props :dark-jedis)]
+      (dom/section #js {:className "css-scrollable-list"} 
+        (apply dom/ul #js {:className "css-slots"} (map slot dark-jedis))
+        (apply dom/div #js {:className "css-scroll-buttons"} 
+               (map scroll-button (map #(hash-map :direction %) ["up" "down"])))))))
 
-(def scrollable-list (om/factory ScrollableList nil))
+(def scrollable-list (om/factory ScrollableList))
