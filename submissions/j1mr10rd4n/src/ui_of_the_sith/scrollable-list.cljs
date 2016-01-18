@@ -19,8 +19,6 @@
 (defui ScrollButton
   Object
   (render [this]
-    ;(.log js/console "foo")
-    ;(.log js/console (om/props this))
     (let [props (om/props this)
           direction (props :direction)
           homeworld-alert? (props :homeworld-alert?)]
