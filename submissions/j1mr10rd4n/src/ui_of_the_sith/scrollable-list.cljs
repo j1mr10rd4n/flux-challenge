@@ -11,13 +11,19 @@
 
 (def scroll-button (om/factory ScrollButton))
 
+(defn slot-css-class [homeworld-alert?]
+  (if homeworld-alert?
+    "css-slot homeworld-alert"
+    "css-slot"))
+
 (defui Slot
   Object
   (render [this]
     (let [props (om/props this)
           name (props :name)
-          homeworld (props :homeworld)]
-      (dom/li #js {:className "css-slot"}
+          homeworld (props :homeworld)
+          homeworld-alert? (= homeworld (props :obi-wan-planet))]
+      (dom/li #js {:className (slot-css-class homeworld-alert?)}
           (dom/h3 nil name)
           (dom/h6 nil (str "Homeworld: " homeworld))))))
 
@@ -26,13 +32,14 @@
 (defui ScrollableList
   static om/IQuery
   (query [this]
-         `[:dark-jedis])
+         [:dark-jedis :obi-wan-planet])
   Object
   (render [this]
     (let [props (om/props this)
-          dark-jedis (props :dark-jedis)]
+          dark-jedis (props :dark-jedis)
+          slot-data (map #(merge (select-keys props [:obi-wan-planet]) (select-keys % [:name :homeworld])) dark-jedis)]
       (dom/section #js {:className "css-scrollable-list"} 
-        (apply dom/ul #js {:className "css-slots"} (map slot dark-jedis))
+        (apply dom/ul #js {:className "css-slots"} (map slot slot-data))
         (apply dom/div #js {:className "css-scroll-buttons"} 
                (map scroll-button (map #(hash-map :direction %) ["up" "down"])))))))
 

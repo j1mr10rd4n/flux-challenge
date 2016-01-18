@@ -25,7 +25,7 @@
           {:keys [:obi-wan-planet]} props]
       (dom/div #js {:className "css-root"}
         (pm/planet-monitor {:obi-wan-planet obi-wan-planet})
-        (sl/scrollable-list {:dark-jedis dark-jedis})))))
+        (sl/scrollable-list props)))))
 
 (om/add-root! reconciler
               App (gdom/getElement "app"))
