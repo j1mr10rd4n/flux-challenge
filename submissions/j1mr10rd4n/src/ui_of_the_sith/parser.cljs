@@ -14,8 +14,12 @@
 ;; =============================================================================
 ;; Mutations
 
-(defn mutate [{:keys [state] as :env} key params]
-  (if (= 'ui-of-the-sith.planet-monitor/update-planet key)
+(defmulti mutate om/dispatch)
+
+(defmethod mutate :default
+  [_ _ _] {:value :not-found})
+   
+(defmethod mutate 'ui-of-the-sith.planet-monitor/update-planet
+  [{:keys [state] :as env} key {:keys [obi-wan-planet] :as params}]
     {:value {:keys [:obi-wan-planet]}
-     :action #(swap! state assoc :obi-wan-planet (params :obi-wan-planet))}
-    {:value :not-found}))
+     :action #(swap! state assoc :obi-wan-planet obi-wan-planet) })
