@@ -33,6 +33,12 @@
     "css-slot"))
 
 (defui Slot
+  static om/Ident
+  (ident [this {:keys [id] :as props}]
+    [:id id])
+  static om/IQuery
+  (query [this]
+    '[:id :name :homeworld :master-id :apprentice-id])
   Object
   (render [this]
     (let [props (om/props this)
@@ -43,19 +49,20 @@
           (dom/h3 nil name)
           (dom/h6 nil (str "Homeworld: " homeworld))))))
 
-(def slot (om/factory Slot))
+(def slot (om/factory Slot {:keyfn :id}))
 
 (defui ScrollableList
   static om/IQuery
   (query [this]
-         [:dark-jedis :obi-wan-planet])
+    '[:obi-wan-planet])
   Object
   (render [this]
     (let [props (om/props this)
-          dark-jedis (props :dark-jedis)
+          dark-jedis (props :dark-jedis/list)
           obi-wan-planet (props :obi-wan-planet)
-          slot-data (map #(merge (select-keys props [:obi-wan-planet]) (select-keys % [:name :homeworld])) dark-jedis)
+          slot-data (map #(merge (select-keys props [:obi-wan-planet]) (select-keys % [:name :homeworld :id])) dark-jedis)
           homeworld-alert? (some #(= % obi-wan-planet) (map #(% :homeworld) dark-jedis))]
+      (.log js/console "foo")
       (dom/section #js {:className "css-scrollable-list"} 
         (apply dom/ul #js {:className "css-slots"} (map slot slot-data))
         (apply dom/div #js {:className "css-scroll-buttons"} 

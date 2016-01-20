@@ -12,13 +12,16 @@
                  {:id 1489 :name "Darth Vader"       :homeworld "Tatooine"      :master-id 3616 :apprentice-id 1330}
                  {:id 1330 :name "Antinnis Tremayne" :homeworld "Coruscant"     :master-id 1489}])
 
-(def app-state (atom {:obi-wan-planet "Earth" :dark-jedis dark-jedis }))
+(def app-state (atom {:obi-wan-planet "Earth" :dark-jedis/list dark-jedis }))
 
 (def reconciler
   (om/reconciler {:state app-state
                   :parser (om/parser {:read p/read :mutate p/mutate})}))
 
 (defui App
+  static om/IQuery
+  (query [this]
+     '[:obi-wan-planet {:dark-jedis/list (om/get-query sl/Slot)}])
   Object
   (render [this] 
     (let [props (om/props this)
