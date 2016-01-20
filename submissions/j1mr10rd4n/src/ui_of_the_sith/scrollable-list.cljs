@@ -9,11 +9,15 @@
       (str button-class " css-button-disabled")
       button-class)))
 
+(defn scroll [direction]
+  (.log js/console " - scroll detected " direction)
+  (om/transact! ui-of-the-sith.core/reconciler `[(dark-jedis/scroll {:direction ~direction})]))
+
 (defn scroll-button-click
   [scroll-button direction homeworld-alert? e]
   (if homeworld-alert?
     (doto e (.preventDefault) (.stopPropagation))
-    (.log js/console "scroll-button-click " e)
+    (scroll direction)
   ))
 
 (defui ScrollButton
