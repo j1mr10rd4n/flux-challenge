@@ -62,7 +62,6 @@
           obi-wan-planet (props :obi-wan-planet)
           slot-data (map #(merge (select-keys props [:obi-wan-planet]) (select-keys % [:name :homeworld :id])) dark-jedis)
           homeworld-alert? (some #(= % obi-wan-planet) (map #(% :homeworld) dark-jedis))]
-      (.log js/console "foo")
       (dom/section #js {:className "css-scrollable-list"} 
         (apply dom/ul #js {:className "css-slots"} (map slot slot-data))
         (apply dom/div #js {:className "css-scroll-buttons"} 
