@@ -32,10 +32,13 @@
   (str "Obi-Wan currently on " planet))
 
 (defui PlanetMonitor
+  static om/IQuery
+  (query [this]
+    [:obi-wan-planet])
   Object
   (componentWillMount [this]
     (let [callback (fn [planet-name]
-                     (om/transact! ui-of-the-sith.core/reconciler
+                     (om/transact! this
                                    `[(update-planet {:obi-wan-planet ~planet-name})]))]
       (om/set-state! this {:socket (socket callback)})
     (.open ((om/get-state this) :socket) base-url)))
@@ -43,7 +46,8 @@
     (let [socket ((om/get-state this) :socket)]
       (.close socket)))
   (render [this]
-    (let [obi-wan-planet (om/props this)]
+    (let [props (om/props this)
+          {:keys [obi-wan-planet]} props]
       (dom/h1 #js {:className "css-planet-monitor"} 
               (planet-monitor-text obi-wan-planet)))))
 
