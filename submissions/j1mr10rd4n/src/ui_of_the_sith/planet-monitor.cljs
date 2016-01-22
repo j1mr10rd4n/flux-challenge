@@ -39,7 +39,7 @@
   (componentWillMount [this]
     (let [callback (fn [planet-name]
                      (om/transact! this
-                                   `[(update-planet {:obi-wan-planet ~planet-name})]))]
+                                   `[(obi-wan-planet/update {:planet-name ~planet-name}) :obi-wan-planet]))]
       (om/set-state! this {:socket (socket callback)})
     (.open ((om/get-state this) :socket) base-url)))
   (componentWillUnmount [this]

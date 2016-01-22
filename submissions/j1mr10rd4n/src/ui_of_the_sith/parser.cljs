@@ -19,10 +19,11 @@
 (defmethod mutate :default
   [_ _ _] {:value :not-found})
    
-(defmethod mutate 'ui-of-the-sith.planet-monitor/update-planet
-  [{:keys [state] :as env} key {:keys [obi-wan-planet] :as params}]
-    {:value {:keys [:obi-wan-planet]}
-     :action #(swap! state assoc :obi-wan-planet obi-wan-planet) })
+(defmethod mutate 'obi-wan-planet/update
+  [{:keys [state] :as env} key {:keys [planet-name] :as params}]
+    (.log js/console "mutate :update-planet ")
+    {:value {:keys :obi-wan-planet}
+     :action #(swap! state assoc :obi-wan-planet planet-name) })
 
 (defn create-master-of
   [dark-jedi]

@@ -12,7 +12,7 @@
                  {:id 1489 :name "Darth Vader"       :homeworld "Tatooine"      :master-id 3616 :apprentice-id 1330}
                  {:id 1330 :name "Antinnis Tremayne" :homeworld "Coruscant"     :master-id 1489}])
 
-(def app-state (atom {:obi-wan-planet "Earth" :dark-jedis/list dark-jedis }))
+(def app-state (atom {:sith/list initial-siths }))
 
 (def reconciler
   (om/reconciler {:state app-state
@@ -24,10 +24,9 @@
      '[:obi-wan-planet {:dark-jedis/list (om/get-query sl/Slot)}])
   Object
   (render [this] 
-    (let [props (om/props this)
-          {:keys [obi-wan-planet]} props]
+    (let [props (om/props this)]
       (dom/div #js {:className "css-root"}
-        (pm/planet-monitor obi-wan-planet)
+        (pm/planet-monitor)
         (sl/scrollable-list props)))))
 
 (om/add-root! reconciler
