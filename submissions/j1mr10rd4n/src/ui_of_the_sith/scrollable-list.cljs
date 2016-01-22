@@ -38,11 +38,11 @@
 
 (defui Slot
   static om/Ident
-  (ident [this {:keys [id] :as props}]
-    [:id id])
+  (ident [this {:keys [id]}]
+    [:siths/by-id id])
   static om/IQuery
   (query [this]
-    '[:id :name :homeworld :master-id :apprentice-id])
+    [:id :name :homeworld :master-id :apprentice-id :remote-id :master-remote-id :apprentice-remote-id])
   Object
   (render [this]
     (let [props (om/props this)
@@ -56,9 +56,12 @@
 (def slot (om/factory Slot {:keyfn :id}))
 
 (defui ScrollableList
+  static om/IQueryParams
+  (params [this]
+    {:sith (om/get-query Slot)})
   static om/IQuery
   (query [this]
-    '[:obi-wan-planet])
+    '[{:siths/list ?sith}])
   Object
   (render [this]
     (let [props (om/props this)
