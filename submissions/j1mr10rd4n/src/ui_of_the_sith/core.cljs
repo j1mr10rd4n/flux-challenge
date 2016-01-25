@@ -8,18 +8,28 @@
             [om.dom :as dom]
             [ui-of-the-sith.parser :as p]
             [ui-of-the-sith.planet-monitor :as pm]
-            [ui-of-the-sith.scrollable-list :as sl])
+            [ui-of-the-sith.scrollable-list :as sl]
+            [ui-of-the-sith.util :as u])
   (:import [goog Uri]
            [goog.net XhrIo]))
 
-(def dark-jedis [{:id 5956 :name "Darth Tenebrous"   :homeworld "Clak\"dor VII" :master-id 1121 :apprentice-id 2350}
-                 {:id 2350 :name "Darth Plagueis"    :homeworld "Mygeeto"       :master-id 5956 :apprentice-id 3616}
-                 {:id 3616 :name "Darth Sidious"     :homeworld "Naboo"         :master-id 2350 :apprentice-id 1489}
-                 {:id 1489 :name "Darth Vader"       :homeworld "Tatooine"      :master-id 3616 :apprentice-id 1330}
-                 {:id 1330 :name "Antinnis Tremayne" :homeworld "Coruscant"     :master-id 1489}])
 (def base-url "http://localhost:3000/dark-jedis/")
 
-(def app-state (atom {:sith/list initial-siths }))
+(def initial-sith-remote-id 3616)
+
+(def initial-siths
+  (let [initial-sith {:id (om/tempid)
+                      :name "Unknown"
+                      :homeworld "unknown"
+                      :master-id nil
+                      :apprentice-id nil
+                      :remote-id initial-sith-remote-id
+                      :master-remote-id nil
+                      :apprentice-remote-id nil
+                      :pending true}]
+    (u/fill-siths :apprentice [initial-sith])))
+
+(def app-state (atom {:siths/list initial-siths}))
 
 (defn dark-jedi-service-loop [c]
   (go

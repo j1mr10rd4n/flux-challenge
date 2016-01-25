@@ -25,22 +25,6 @@
     {:value {:keys :obi-wan-planet}
      :action #(swap! state assoc :obi-wan-planet planet-name) })
 
-(defn create-master-of
-  [dark-jedi]
-    {:id (dark-jedi :master-id)
-     :name (str "Master of " (dark-jedi :name))
-     :homeworld "unknown"
-     :master-id (om/tempid)
-     :apprentice-id (dark-jedi :id)})
-
-(defn create-apprentice-of
-  [dark-jedi]
-    {:id (dark-jedi :apprentice-id)
-     :name (str "Apprentice of " (dark-jedi :name))
-     :homeworld "unknown"
-     :master-id (dark-jedi :id)
-     :apprentice-id (om/tempid)})
-
 (defmethod mutate 'dark-jedis/scroll
   [{:keys [state] :as env} key {:keys [direction] :as params}]
     (condp = direction
