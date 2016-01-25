@@ -44,8 +44,41 @@
                        (let [xhr (o/get e "target")]
                          (if-let [status (= 200 (-> xhr .getStatus))]
                            (let [jedi-data (-> xhr .getResponseJson js->clj)]
-                             (.log js/console "GOT RESPONSE FOR " (jedi-data "name") " WITH REMOTE ID " (jedi-data "id"))))))))
-                           
+                             (.log js/console "GOT RESPONSE FOR " (jedi-data "name") " WITH REMOTE ID " (jedi-data "id"))
+                             (let [siths (@app-state :siths/list)
+                                   remote-id (jedi-data "id")
+                                   master-remote-id (get-in jedi-data ["master" "id"])
+                                   apprentice-remote-id (get-in jedi-data ["apprentice" "id"])
+                                   name (jedi-data "name")
+                                   homeworld (get-in jedi-data ["homeworld" "name"])
+                                   apprentice-id (reduce (fn [result sith]
+                                                           (if (= (sith :remote-id) remote-id)
+                                                             (sith :apprentice-id)
+                                                             result))
+                                                         nil
+                                                         siths)
+                                   master-id (reduce (fn [result sith]
+                                                       (if (= (sith :remote-id) remote-id)
+                                                         (sith :master-id)
+                                                         result))
+                                                     nil
+                                                     siths)
+                                   siths' (map (fn [sith]
+                                                 (cond
+                                                   (= (sith :remote-id) remote-id) (assoc sith :name name
+                                                                                               :homeworld homeworld
+                                                                                               :master-remote-id master-remote-id
+                                                                                               :apprentice-remote-id apprentice-remote-id
+                                                                                               :pending false)
+                                                   (= (sith :id) apprentice-id) (assoc sith :remote-id apprentice-remote-id :master-remote-id remote-id)
+                                                   (= (sith :id) master-id) (assoc sith :remote-id master-remote-id :apprentice-remote-id remote-id)
+                                                   :else sith))
+                                               siths)
+                                   filled-siths (cond
+                                                  (u/contains-sith-with-no-apprentice? siths') (u/fill-siths :master (filterv (fn [{:keys [pending]}] (not pending)) siths'))
+                                                  (u/contains-sith-with-no-master? siths') (u/fill-siths :apprentice (filterv (fn [{:keys [pending]}] (not pending)) siths'))
+                                                  :else siths')]
+                               (cb {:siths/list filled-siths}))))))))
         (.send xhr uri))
       (recur (<! c)))))
 

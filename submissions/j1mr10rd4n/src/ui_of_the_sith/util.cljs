@@ -54,3 +54,13 @@
     (if (empty? pending-sith)
       nil
       (first pending-sith))))k
+
+(defn contains-sith-with-no-apprentice? [siths]
+  (not-empty (filter (fn [{:keys [pending apprentice-remote-id]}] 
+                         (and (not pending) (nil? apprentice-remote-id)))
+                       siths)))
+
+(defn contains-sith-with-no-master? [siths]
+  (not-empty (filter (fn [{:keys [pending master-remote-id]}] 
+                         (and (not pending) (nil? master-remote-id)))
+                       siths)))
