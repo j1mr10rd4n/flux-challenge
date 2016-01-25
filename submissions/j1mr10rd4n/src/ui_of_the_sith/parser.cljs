@@ -4,7 +4,12 @@
 ;; =============================================================================
 ;; Reads
 
-(defn read [{:keys [state] :as env} key params]
+(defmulti read 
+  (fn [env key params]
+    key))
+
+(defmethod read :default
+  [{:keys [state] :as env} key params]
   (let [st @state]
     (if-let [[_ value] (find st key)]
       {:value value}
