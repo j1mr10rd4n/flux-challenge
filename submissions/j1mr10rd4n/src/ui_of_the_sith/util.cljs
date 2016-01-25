@@ -45,3 +45,12 @@
     (reduce (fn [siths' _] (fill-function siths'))
             siths
             (range fill-count))))
+
+(defn first-pending-sith? [list]
+  (let [pending-sith (filter (fn [{:keys [remote-id pending]}] 
+                               (and (= true pending) 
+                                    (not (= nil remote-id))))
+                             list)]
+    (if (empty? pending-sith)
+      nil
+      (first pending-sith))))k

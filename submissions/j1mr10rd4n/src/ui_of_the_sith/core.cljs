@@ -51,9 +51,19 @@
 
 (def send-chan (chan))
 
+(defn send-to-chan [c]
+  (fn [{:keys [dark-jedi-service]} cb]
+    (when dark-jedi-service
+      (let [{[dark-jedi-service] :children} (om/query->ast dark-jedi-service)
+            remote-id (get-in dark-jedi-service [:params :remote-id])]
+        (put! c [remote-id cb])))))
+
 (def reconciler
-  (om/reconciler {:state app-state
-                  :parser (om/parser {:read p/read :mutate p/mutate})}))
+  (om/reconciler
+    {:state app-state
+     :parser (om/parser {:read p/read :mutate p/mutate})
+     :send (send-to-chan send-chan) 
+     :remotes [:dark-jedi-service]}))
 
 (dark-jedi-service-loop send-chan)
 
