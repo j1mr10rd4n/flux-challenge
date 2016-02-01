@@ -3,6 +3,7 @@
   (:require [goog.dom :as gdom]
             [goog.events :as ev]
             [goog.object :as o]
+            [goog.log :as glog]
             [cljs.core.async :as async :refer [<! >! put! chan]]
             [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
@@ -12,6 +13,11 @@
             [ui-of-the-sith.util :as u])
   (:import [goog Uri]
            [goog.net XhrIo]))
+
+(defonce logger 
+  (let [logger (glog/getLogger "sith.ui")]
+    (.setLevel logger goog.debug.Logger.Level.FINEST)
+    logger))
 
 (def base-url "http://localhost:3000/dark-jedis/")
 
@@ -96,7 +102,8 @@
     {:state app-state
      :parser (om/parser {:read p/read :mutate p/mutate})
      :send (send-to-chan send-chan) 
-     :remotes [:dark-jedi-service]}))
+     :remotes [:dark-jedi-service]
+     :logger logger}))
 
 (dark-jedi-service-loop send-chan)
 
