@@ -29,7 +29,7 @@
                       :homeworld "unknown"
                       :master-id nil
                       :apprentice-id nil
-                      :remote-id initial-sith-remote-id
+                      :remote-id nil
                       :master-remote-id nil
                       :apprentice-remote-id nil
                       :pending true}]
@@ -112,6 +112,8 @@
   (query [this]
     `[{:siths/list ~(om/get-query sl/Slot)}])
   Object
+  (componentDidMount [this]
+    (om/transact! this `[(siths/init-list ~{:remote-id initial-sith-remote-id})]))
   (render [this] 
     (let [{:keys [:siths/list]} (om/props this)]
       (dom/div #js {:className "css-root"}

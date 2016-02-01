@@ -64,3 +64,9 @@
                                    (subvec (@state :dark-jedis/list) 0 3))]
         {:value {:keys [:dark-jedis/list]}
          :action #(swap! ui-of-the-sith.core/app-state assoc :dark-jedis/list jedi-array)})))
+
+(defmethod mutate 'siths/init-list
+  [{:keys [state] :as env} key {:keys [remote-id] :as params}]
+  (let [first-sith-id (get-in @state [:siths/list 0])]
+    {:action #(swap! state assoc-in (conj first-sith-id :remote-id) remote-id)
+     :value {:keys (conj first-sith-id :remote-id)}}))
