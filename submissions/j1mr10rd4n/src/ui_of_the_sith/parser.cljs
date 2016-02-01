@@ -16,20 +16,20 @@
       {:value value}
       {:value :not-found})))
 
-(defmethod read :siths/list
-  [{:keys [state ast] :as env} key params]
-  ;; so in this read, there should be some siths in the app state
-  ;; one or more of which should have a remote-id and marked as pending
-  ;; return the others and start a request to get the details of the pending one
+(defn get-siths
+  [state key]
+  ; (get st key) - this is being called with key of :siths/list and is getting the
+  ; now normalized array of siths/by-id references
+  ; the get-in st % function is being called with [:siths/by-id <<id>>] which is
+  ; the `table` of normalized data in the state!
+  ; i.e. the original denormalized list has been converted to a list of references
+  ; that can be passed directly to get-in st
   (let [st @state]
-    (let [result
-    (if-let [[_ siths/list] (find st :siths/list)]
-      (merge {:value list}
-             (if-let [pending-sith (u/first-pending-sith? list)]
-               (do
-                 (let [ast' (assoc-in ast [:params] {:remote-id (pending-sith :remote-id)})]
-                   {:dark-jedi-service ast'}))))
-      {:value :not-found})]
+    (into [] (map #(get-in st %)) (get st key))))
+
+(defmethod read :siths/list
+  [{:keys [state] :as env} key params]
+  {:value (get-siths state key)})
 
 ;; =============================================================================
 ;; Mutations

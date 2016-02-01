@@ -42,36 +42,30 @@
     [:siths/by-id id])
   static om/IQuery
   (query [this]
-    [:id :name :homeworld :master-id :apprentice-id :remote-id :master-remote-id :apprentice-remote-id])
+    [:sith/id :sith/name :sith/homeworld :sith/remote-id])
   Object
   (render [this]
-    (let [props (om/props this)
-          name (props :name)
-          homeworld (props :homeworld)
-          homeworld-alert? (= homeworld (props :obi-wan-planet))]
-      (dom/li #js {:className (slot-css-class homeworld-alert?)}
-          (dom/h3 nil name)
-          (dom/h6 nil (str "Homeworld: " homeworld))))))
+    (let [{:keys [:id :remote-id :name :homeworld :pending]} (om/props this)]
+      (dom/li #js {:className (slot-css-class false)}
+          (dom/h3 nil (str remote-id " " name))
+          (dom/h6 nil (str "Homeworld: " homeworld))
+          (dom/h6 nil (str "SLOT " id " pending? " pending ))))))
 
 (def slot (om/factory Slot {:keyfn :id}))
 
 (defui ScrollableList
-  static om/IQueryParams
-  (params [this]
-    {:sith (om/get-query Slot)})
-  static om/IQuery
-  (query [this]
-    '[{:siths/list ?sith}])
   Object
   (render [this]
-    (let [props (om/props this)
-          dark-jedis (props :dark-jedis/list)
-          obi-wan-planet (props :obi-wan-planet)
-          slot-data (map #(merge (select-keys props [:obi-wan-planet]) (select-keys % [:name :homeworld :id])) dark-jedis)
-          homeworld-alert? (some #(= % obi-wan-planet) (map #(% :homeworld) dark-jedis))]
+    (let [list (om/props this)
+          ;{:keys [:siths/list]} props
+          ;;slot-data (map #(merge (select-keys props [:obi-wan-planet]) (select-keys % [:name :homeworld :id])) dark-jedis)
+          ;;; do i put the homeworld alert in the application state as a derived signal?
+          ;;homeworld-alert? (some #(= % obi-wan-planet) (map #(% :homeworld) dark-jedis))
+          ]
       (dom/section #js {:className "css-scrollable-list"} 
-        (apply dom/ul #js {:className "css-slots"} (map slot slot-data))
-        (apply dom/div #js {:className "css-scroll-buttons"} 
-               (map scroll-button (map #(merge {:homeworld-alert? homeworld-alert?} (hash-map :direction %)) ["up" "down"])))))))
+        (apply dom/ul #js {:className "css-slots"} (map slot list))
+        ;(apply dom/div #js {:className "css-scroll-buttons"} 
+               ;(map scroll-button (map #(merge {:homeworld-alert? homeworld-alert?} (hash-map :direction %)) ["up" "down"])))
+))))
 
 (def scrollable-list (om/factory ScrollableList))

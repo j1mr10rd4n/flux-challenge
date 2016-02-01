@@ -99,7 +99,7 @@
 
 (def reconciler
   (om/reconciler
-    {:state app-state
+    {:state {:siths/list initial-siths} ;giving reconciler degenerate data not in atom
      :parser (om/parser {:read p/read :mutate p/mutate})
      :send (send-to-chan send-chan) 
      :remotes [:dark-jedi-service]
@@ -110,13 +110,13 @@
 (defui App
   static om/IQuery
   (query [this]
-     '[:obi-wan-planet {:dark-jedis/list (om/get-query sl/Slot)}])
+    `[{:siths/list ~(om/get-query sl/Slot)}])
   Object
   (render [this] 
-    (let [props (om/props this)]
+    (let [{:keys [:siths/list]} (om/props this)]
       (dom/div #js {:className "css-root"}
         (pm/planet-monitor)
-        (sl/scrollable-list props)))))
+        (sl/scrollable-list list)))))
 
 (om/add-root! reconciler
               App (gdom/getElement "app"))
