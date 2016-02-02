@@ -52,8 +52,7 @@
     (let [{:keys [:id :remote-id :name :homeworld :pending]} (om/props this)]
       (dom/li #js {:className (slot-css-class false)}
           (dom/h3 nil (str remote-id " " name))
-          (dom/h6 nil (str "Homeworld: " homeworld))
-          (dom/h6 nil (str "SLOT " id " pending? " pending ))))))
+          (dom/h6 nil (str "Homeworld: " homeworld))))))
 
 (def slot (om/factory Slot {:keyfn :id}))
 
