@@ -44,6 +44,10 @@
   (query [this]
     [:sith/id :sith/name :sith/homeworld :sith/remote-id])
   Object
+  (componentWillReceiveProps [this nextProps]
+    (let [{:keys [id remote-id]} nextProps]
+      (when (not (= remote-id (:remote-id (om/props this))))
+        (om/transact! this `[(sith/populate-from-remote ~{:id id :remote-id remote-id})]))))
   (render [this]
     (let [{:keys [:id :remote-id :name :homeworld :pending]} (om/props this)]
       (dom/li #js {:className (slot-css-class false)}
