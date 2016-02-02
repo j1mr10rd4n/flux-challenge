@@ -113,7 +113,8 @@
     `[{:siths/list ~(om/get-query sl/Slot)}])
   Object
   (componentDidMount [this]
-    (om/transact! this `[(siths/init-list ~{:remote-id initial-sith-remote-id})]))
+    (let [initial-sith-id (get-in (om/props this) [:siths/list 0 :id])]
+      (om/transact! this `[(sith/set-remote-id ~{:id initial-sith-id :remote-id initial-sith-remote-id})])))
   (render [this] 
     (let [{:keys [:siths/list]} (om/props this)]
       (dom/div #js {:className "css-root"}
