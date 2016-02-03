@@ -70,5 +70,5 @@
     {:action #(swap! state assoc-in [:siths/by-id id :sith/remote-id] remote-id)
 
 (defmethod mutate 'sith/populate-from-remote
-  [{:keys [ref ast] :as env} key params]
+  [{:keys [ast] :as env} key params]
   {:dark-jedi-query ast})
