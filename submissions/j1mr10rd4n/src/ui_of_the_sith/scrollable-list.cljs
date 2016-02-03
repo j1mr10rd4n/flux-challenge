@@ -47,21 +47,18 @@
   (componentDidUpdate [this prevProps prevState]
     (let [{:keys [sith/id 
                   sith/remote-id
-                  sith/name
-                  sith/apprentice-remote-id
-                  sith/apprentice-id] :as sith} (om/props this)
+                  sith/name] :as sith} (om/props this)
           prev-remote-id (:sith/remote-id prevProps)
           prev-name (:sith/name prevProps)
-          prev-apprentice-remote-id (:sith/apprentice-remote-id prevProps)
           remote-id-changed? (not (= remote-id prev-remote-id))
           populated-from-remote? (not (= name prev-name))
-          set-remote-id-callback (:set-remote-id-callback (om/get-computed this))]
+          populate-from-remote-callback (:populate-from-remote-callback (om/get-computed this))]
       (if remote-id-changed?
         (om/transact! this
                       `[(sith/populate-from-remote ~{:sith sith})
                       [~[:siths/by-id id]]]))
       (if populated-from-remote?
-        (set-remote-id-callback apprentice-id apprentice-remote-id))))
+        (populate-from-remote-callback id))))
   (render [this]
     (let [{:keys [sith/id sith/remote-id sith/name sith/homeworld]} (om/props this)]
       (dom/li #js {:className (slot-css-class false)}

@@ -84,12 +84,22 @@
 
 (dark-jedi-service-loop send-chan)
 
-(defn set-remote-id-callback
+(defn populate-from-remote-callback
   [component]
-  (fn [id remote-id] 
+  (fn [id] 
+    (let [updated-sith (get-in @reconciler [:siths/by-id id])
+         {:keys [sith/apprentice-id
+                 sith/apprentice-remote-id
+                 sith/master-id
+                 sith/master-remote-id]} updated-sith 
+          ]
+      (if (not (nil? apprentice-remote-id))
     (om/transact! component 
-                  `[(sith/set-remote-id ~{:id id :remote-id remote-id})
-                  [~[:siths/by-id id]]])))
+                  `[(sith/set-remote-id ~{:id apprentice-id :remote-id apprentice-remote-id})
+                  [~[:siths/by-id id]]])
+                  ))
+        )
+      )
 
 (defui App
   static om/IQuery
@@ -98,11 +108,13 @@
   Object
   (componentDidMount [this]
     (let [initial-sith-id (get-in (om/props this) [:siths/list 0 :sith/id])]
-      ((set-remote-id-callback this) initial-sith-id initial-sith-remote-id)))
+      (om/transact! this 
+                    `[(sith/set-remote-id ~{:id initial-sith-id :remote-id initial-sith-remote-id})
+                    [~[:siths/by-id initial-sith-id]]])))
   (render [this] 
     (let [{:keys [:siths/list]} (om/props this)
           list' (om/computed list
-                             {:set-remote-id-callback (set-remote-id-callback this)})]
+                             {:populate-from-remote-callback (populate-from-remote-callback this)})]
       (dom/div #js {:className "css-root"}
         (pm/planet-monitor)
         (sl/scrollable-list list')))))
