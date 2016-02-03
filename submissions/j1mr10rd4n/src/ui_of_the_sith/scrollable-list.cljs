@@ -53,11 +53,14 @@
           prev-remote-id (:sith/remote-id prevProps)
           prev-name (:sith/name prevProps)
           prev-apprentice-remote-id (:sith/apprentice-remote-id prevProps)
+          remote-id-changed? (not (= remote-id prev-remote-id))
+          populated-from-remote? (not (= name prev-name))
           set-remote-id-callback (:set-remote-id-callback (om/get-computed this))]
-      (when-not (= remote-id prev-remote-id)
-        (om/transact! this `[(sith/populate-from-remote ~{:sith sith})
-                             [~[:siths/by-id id]]]))
-      (when-not (= name prev-name)
+      (if remote-id-changed?
+        (om/transact! this
+                      `[(sith/populate-from-remote ~{:sith sith})
+                      [~[:siths/by-id id]]]))
+      (if populated-from-remote?
         (set-remote-id-callback apprentice-id apprentice-remote-id))))
   (render [this]
     (let [{:keys [sith/id sith/remote-id sith/name sith/homeworld]} (om/props this)]
