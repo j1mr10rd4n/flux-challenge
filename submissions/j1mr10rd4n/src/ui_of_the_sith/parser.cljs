@@ -66,8 +66,8 @@
          :action #(swap! ui-of-the-sith.core/app-state assoc :dark-jedis/list jedi-array)})))
 (defmethod mutate 'sith/set-remote-id
   [{:keys [state] :as env} key {:keys [id remote-id] :as params}]
-    {:action #(swap! state assoc-in [:siths/by-id id :remote-id] remote-id)
      :value {:keys (:siths/by-id id :remote-id)}})
+    {:action #(swap! state assoc-in [:siths/by-id id :sith/remote-id] remote-id)
 
 (defmethod mutate 'sith/populate-from-remote
   [{:keys [ref ast] :as env} key params]

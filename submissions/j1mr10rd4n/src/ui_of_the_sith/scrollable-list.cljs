@@ -38,7 +38,7 @@
 
 (defui Slot
   static om/Ident
-  (ident [this {:keys [id]}]
+  (ident [this {:keys [sith/id]}]
     [:siths/by-id id])
   static om/IQuery
   (query [this]
@@ -49,12 +49,12 @@
       (when (not (= remote-id (:remote-id (om/props this))))
         (om/transact! this `[(sith/populate-from-remote ~{:id id :remote-id remote-id})]))))
   (render [this]
-    (let [{:keys [:id :remote-id :name :homeworld :pending]} (om/props this)]
+    (let [{:keys [sith/id sith/remote-id sith/name sith/homeworld]} (om/props this)]
       (dom/li #js {:className (slot-css-class false)}
           (dom/h3 nil (str remote-id " " name))
           (dom/h6 nil (str "Homeworld: " homeworld))))))
 
-(def slot (om/factory Slot {:keyfn :id}))
+(def slot (om/factory Slot {:keyfn :sith/id}))
 
 (defui ScrollableList
   Object

@@ -3,38 +3,36 @@
 
 (defn create-master-of
   [apprentice]
-    {:id (om/tempid)
-     :name (str "Master of " (apprentice :name))
-     :homeworld "unknown"
-     :master-id nil
-     :apprentice-id (apprentice :id)
-     :remote-id (apprentice :master-remote-id)
-     :master-remote-id nil
-     :apprentice-remote-id (apprentice :remote-id)
-     :pending true})
+    {:sith/id (om/tempid)
+     :sith/name (str "Master of " (apprentice :sith/name))
+     :sith/homeworld "unknown"
+     :sith/master-id nil
+     :sith/apprentice-id (apprentice :sith/id)
+     :sith/remote-id (apprentice :sith/master-remote-id)
+     :sith/master-remote-id nil
+     :sith/apprentice-remote-id (apprentice :sith/remote-id)})
 
 (defn create-apprentice-of
   [master]
-    {:id (om/tempid)  
-     :name (str "Apprentice of " (master :name))
-     :homeworld "unknown"
-     :master-id (master :id)
-     :apprentice-id nil
-     :remote-id (master :apprentice-remote-id)
-     :master-remote-id (master :remote-id)
-     :apprentice-remote-id nil
-     :pending true})
+    {:sith/id (om/tempid)  
+     :sith/name (str "Apprentice of " (master :sith/name))
+     :sith/homeworld "unknown"
+     :sith/master-id (master :sith/id)
+     :sith/apprentice-id nil
+     :sith/remote-id (master :sith/apprentice-remote-id)
+     :sith/master-remote-id (master :sith/remote-id)
+     :sith/apprentice-remote-id nil})
 
 (defn append-apprentice-to [siths]
   (let [last-master (last siths)
         apprentice (create-apprentice-of last-master)
-        siths' (assoc-in siths [(- (count siths) 1) :apprentice-id] (apprentice :id))]
+        siths' (assoc-in siths [(- (count siths) 1) :sith/apprentice-id] (apprentice :sith/id))]
         (into [] (conj siths' apprentice))))
 
 (defn prepend-master-to [siths]
   (let [first-apprentice (first siths)
         master (create-master-of first-apprentice)
-        siths' (assoc-in siths [0 :master-id] (master :id))]
+        siths' (assoc-in siths [0 :sith/master-id] (master :sith/id))]
         (into [] (cons master siths'))))
 
 (defn fill-siths [relationship siths]

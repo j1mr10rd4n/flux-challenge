@@ -24,20 +24,19 @@
 (def initial-sith-remote-id 3616)
 
 (def initial-siths
-  (let [initial-sith {:id (om/tempid)
-                      :name "Unknown"
-                      :homeworld "unknown"
-                      :master-id nil
-                      :apprentice-id nil
-                      :remote-id nil
-                      :master-remote-id nil
-                      :apprentice-remote-id nil
-                      :pending true}]
+  (let [initial-sith {:sith/id (om/tempid)
+                      :sith/name "Unknown"
+                      :sith/homeworld "unknown"
+                      :sith/master-id nil
+                      :sith/apprentice-id nil
+                      :sith/remote-id nil
+                      :sith/master-remote-id nil
+                      :sith/apprentice-remote-id nil}]
     (u/fill-siths :apprentice [initial-sith])))
 
 (defn dark-jedi-service-loop [c]
   (go
-    (loop [[id remote-id cb] (<! c)]
+    (loop [[{:keys [sith/id sith/remote-id]:as sith} cb] (<! c)]
       (let [url (str base-url remote-id)
             uri (Uri. url)
             xhr (XhrIo.)]
