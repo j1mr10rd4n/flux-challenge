@@ -51,7 +51,7 @@
                              list)]
     (if (empty? pending-sith)
       nil
-      (first pending-sith))))k
+      (first pending-sith))))
 
 (defn contains-sith-with-no-apprentice? [siths]
   (not-empty (filter (fn [{:keys [pending apprentice-remote-id]}] 
