@@ -12,7 +12,7 @@
 (defmethod read :default
   [{:keys [state] :as env} key params]
   (let [st @state]
-    (if-let [[_ value] (find st key)]
+    (if-let [value (get-in st key)]
       {:value value}
       {:value :not-found})))
 
