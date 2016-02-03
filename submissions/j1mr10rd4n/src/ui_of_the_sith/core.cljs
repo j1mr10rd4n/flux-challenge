@@ -34,6 +34,23 @@
                       :sith/apprentice-remote-id nil}]
     (u/fill-siths :apprentice [initial-sith])))
 
+(def send-chan (chan))
+
+(defn send-to-chan [c]
+  (fn [{:keys [dark-jedi-query]} cb]
+    (when dark-jedi-query
+      (let [{[dark-jedi-query] :children} (om/query->ast dark-jedi-query)
+            {:keys [sith]} (:params dark-jedi-query)]
+        (put! c [sith cb])))))
+
+(def reconciler
+  (om/reconciler
+    {:state {:siths/list initial-siths} ;giving reconciler degenerate data not in atom
+     :parser (om/parser {:read p/read :mutate p/mutate})
+     :send (send-to-chan send-chan) 
+     :remotes [:dark-jedi-query]
+     :logger logger}))
+
 (defn dark-jedi-service-loop [c]
   (go
     (loop [[{:keys [sith/id sith/remote-id]:as sith} cb] (<! c)]
@@ -50,27 +67,20 @@
                              (.log js/console "GOT RESPONSE FOR " (jedi-data "name") " WITH REMOTE ID " (jedi-data "id"))
                              (let [name (jedi-data "name")
                                    homeworld (get-in jedi-data ["homeworld" "name"])
-                                   populated-sith {:siths/by-id {id {:name name :homeworld homeworld}}}]
-                               (cb populated-sith))))))))
+                                   apprentice-remote-id (get-in jedi-data ["apprentice" "id"])
+                                   master-remote-id (get-in jedi-data ["master" "id"])
+                                   populated-sith (assoc sith :sith/name name
+                                                              :sith/homeworld homeworld
+                                                              :sith/apprentice-remote-id apprentice-remote-id
+                                                              :sith/master-remote-id master-remote-id)
+                                   siths-by-id (:siths/by-id @reconciler)
+                                   siths-by-id' (assoc siths-by-id id populated-sith)]
+                               (cb {:siths/by-id siths-by-id'})
+                               
+                               
+                               )))))))
         (.send xhr uri))
       (recur (<! c)))))
-
-(def send-chan (chan))
-
-(defn send-to-chan [c]
-  (fn [{:keys [dark-jedi-query]} cb]
-    (when dark-jedi-query
-      (let [{[dark-jedi-query] :children} (om/query->ast dark-jedi-query)
-            {:keys [id remote-id]} (:params dark-jedi-query)]
-        (put! c [id remote-id cb])))))
-
-(def reconciler
-  (om/reconciler
-    {:state {:siths/list initial-siths} ;giving reconciler degenerate data not in atom
-     :parser (om/parser {:read p/read :mutate p/mutate})
-     :send (send-to-chan send-chan) 
-     :remotes [:dark-jedi-query]
-     :logger logger}))
 
 (dark-jedi-service-loop send-chan)
 
