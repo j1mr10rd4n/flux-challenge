@@ -84,19 +84,28 @@
 
 (dark-jedi-service-loop send-chan)
 
+(defn set-remote-id-callback
+  [component]
+  (fn [id remote-id] 
+    (om/transact! component 
+                  `[(sith/set-remote-id ~{:id id :remote-id remote-id})
+                  [~[:siths/by-id id]]])))
+
 (defui App
   static om/IQuery
   (query [this]
     `[{:siths/list ~(om/get-query sl/Slot)}])
   Object
   (componentDidMount [this]
-    (let [initial-sith-id (get-in (om/props this) [:siths/list 0 :id])]
-      (om/transact! this `[(sith/set-remote-id ~{:id initial-sith-id :remote-id initial-sith-remote-id})])))
+    (let [initial-sith-id (get-in (om/props this) [:siths/list 0 :sith/id])]
+      ((set-remote-id-callback this) initial-sith-id initial-sith-remote-id)))
   (render [this] 
-    (let [{:keys [:siths/list]} (om/props this)]
+    (let [{:keys [:siths/list]} (om/props this)
+          list' (om/computed list
+                             {:set-remote-id-callback (set-remote-id-callback this)})]
       (dom/div #js {:className "css-root"}
         (pm/planet-monitor)
-        (sl/scrollable-list list)))))
+        (sl/scrollable-list list')))))
 
 (om/add-root! reconciler
               App (gdom/getElement "app"))

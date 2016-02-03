@@ -44,10 +44,21 @@
   (query [this]
     [:sith/id :sith/name :sith/homeworld :sith/remote-id])
   Object
-  (componentWillReceiveProps [this nextProps]
-    (let [{:keys [id remote-id]} nextProps]
-      (when (not (= remote-id (:remote-id (om/props this))))
-        (om/transact! this `[(sith/populate-from-remote ~{:id id :remote-id remote-id})]))))
+  (componentDidUpdate [this prevProps prevState]
+    (let [{:keys [sith/id 
+                  sith/remote-id
+                  sith/name
+                  sith/apprentice-remote-id
+                  sith/apprentice-id] :as sith} (om/props this)
+          prev-remote-id (:sith/remote-id prevProps)
+          prev-name (:sith/name prevProps)
+          prev-apprentice-remote-id (:sith/apprentice-remote-id prevProps)
+          set-remote-id-callback (:set-remote-id-callback (om/get-computed this))]
+      (when-not (= remote-id prev-remote-id)
+        (om/transact! this `[(sith/populate-from-remote ~{:sith sith})
+                             [~[:siths/by-id id]]]))
+      (when-not (= name prev-name)
+        (set-remote-id-callback apprentice-id apprentice-remote-id))))
   (render [this]
     (let [{:keys [sith/id sith/remote-id sith/name sith/homeworld]} (om/props this)]
       (dom/li #js {:className (slot-css-class false)}
@@ -64,9 +75,10 @@
           ;;slot-data (map #(merge (select-keys props [:obi-wan-planet]) (select-keys % [:name :homeworld :id])) dark-jedis)
           ;;; do i put the homeworld alert in the application state as a derived signal?
           ;;homeworld-alert? (some #(= % obi-wan-planet) (map #(% :homeworld) dark-jedis))
+          slots (map #(let[slot' (om/computed % (om/get-computed this))] (slot slot')) list)
           ]
       (dom/section #js {:className "css-scrollable-list"} 
-        (apply dom/ul #js {:className "css-slots"} (map slot list))
+        (apply dom/ul #js {:className "css-slots"} slots)
         ;(apply dom/div #js {:className "css-scroll-buttons"} 
                ;(map scroll-button (map #(merge {:homeworld-alert? homeworld-alert?} (hash-map :direction %)) ["up" "down"])))
 ))))
