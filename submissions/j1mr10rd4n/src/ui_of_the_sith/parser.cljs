@@ -28,6 +28,11 @@
   (let [st @state]
     (into [] (map #(get-in st %)) (get st key))))
 
+(defmethod read :obi-wan-planet
+  [{:keys [state] :as env} key params]
+    (let [[_ v] (find @state key)]
+      {:value v}))
+
 (defmethod read :siths/list
   [{:keys [state] :as env} key params]
   {:value (get-siths state key)})

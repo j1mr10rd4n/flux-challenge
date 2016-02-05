@@ -108,15 +108,15 @@
 (defui App
   static om/IQuery
   (query [this]
-    `[{:siths/list ~(om/get-query sl/Slot)}])
+    `[:obi-wan-planet {:siths/list ~(om/get-query sl/Slot)}])
   Object
   (render [this] 
-    (let [{:keys [:siths/list]} (om/props this)
+    (let [{:keys [:obi-wan-planet :siths/list]} (om/props this)
           list' (om/computed list
                              {:populate-from-remote-callback (populate-from-remote-callback this)
                               :scroll-callback (scroll-callback this)})]
       (dom/div #js {:className "css-root"}
-        (pm/planet-monitor)
+        (pm/planet-monitor {:obi-wan-planet obi-wan-planet})
         (sl/scrollable-list list')))))
 
 (om/add-root! reconciler
