@@ -25,6 +25,8 @@
 
 (def list-size 5)
 
+(def scroll-size 2)
+
 (def initial-siths
   (let [initial-sith {:sith/id (om/tempid)
                       :sith/name "Unknown"
@@ -100,13 +102,19 @@
                       [~[:siths/by-id id]]]))
       (if (and (nil? apprentice-remote-id) (not= i list-size))  
         (om/transact! component
-                      `[(siths/adjust-list ~{:index i :limit :end})
+                      `[(siths/scroll ~{:index i :move-to :end})
                       [:siths/list]])))))
 
 (defn scroll-callback
   [component]
   (fn [direction]
-    (.log js/console "SCROLL CALLBACK " (name direction))))
+    (condp = direction
+      :up (om/transact! component
+                        `[(siths/scroll ~{:index (- list-size scroll-size 1) :move-to :end})
+                        [:siths/list]])
+      :down (om/transact! component
+                          `[(siths/scroll ~{:index scroll-size :move-to :start})
+                          [:siths/list]]))))
 
 (defui App
   static om/IQuery
