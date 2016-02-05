@@ -94,6 +94,10 @@
         (om/transact! component 
                       `[(sith/set-remote-id ~{:id apprentice-id :remote-id apprentice-remote-id})
                       [~[:siths/by-id id]]]))
+      (if (and (not (nil? master-remote-id)) (not (nil? master-id)))
+        (om/transact! component 
+                      `[(sith/set-remote-id ~{:id master-id :remote-id master-remote-id})
+                      [~[:siths/by-id id]]]))
       (if (and (nil? apprentice-remote-id) (not= i list-size))  
         (om/transact! component
                       `[(siths/adjust-list ~{:index i :limit :end})
