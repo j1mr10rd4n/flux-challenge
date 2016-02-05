@@ -92,15 +92,15 @@
                  sith/apprentice-remote-id
                  sith/master-id
                  sith/master-remote-id]} updated-sith 
-          ]
-      (if (not (nil? apprentice-remote-id))
-    (om/transact! component 
-                  `[(sith/set-remote-id ~{:id apprentice-id :remote-id apprentice-remote-id})
-                  [~[:siths/by-id id]]])
-                  ))
-        )
-      )
-
+          i (u/index-of (:siths/list @reconciler) [:siths/by-id id])]
+      (if (and (not (nil? apprentice-remote-id)) (not (nil? apprentice-id)))
+        (om/transact! component 
+                      `[(sith/set-remote-id ~{:id apprentice-id :remote-id apprentice-remote-id})
+                      [~[:siths/by-id id]]]))
+      (if (and (nil? apprentice-remote-id) (not= i 4))  
+        (om/transact! component
+                      `[(siths/adjust-list ~{:index i :limit :end})
+                      [:siths/list]])))))
 (defui App
   static om/IQuery
   (query [this]

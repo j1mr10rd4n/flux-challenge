@@ -62,3 +62,9 @@
   (not-empty (filter (fn [{:keys [pending master-remote-id]}] 
                          (and (not pending) (nil? master-remote-id)))
                        siths)))
+
+(defn index-of [coll v]
+  (let [i (count (take-while #(not= v %) coll))]
+    (when (or (< i (count coll))
+              (= v (last coll)))
+          i)))

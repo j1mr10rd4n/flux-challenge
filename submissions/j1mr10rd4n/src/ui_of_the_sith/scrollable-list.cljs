@@ -51,6 +51,12 @@
      :sith/master-id
      :sith/master-remote-id])
   Object
+  (componentDidMount [this]
+    (let [{:keys [sith/id sith/remote-id] :as sith} (om/props this)]
+      (if (not (nil? remote-id))
+        (om/transact! this
+                      `[(sith/populate-from-remote ~{:sith sith})
+                      [~[:siths/by-id id]]]))))    
   (componentDidUpdate [this prevProps prevState]
     (let [{:keys [sith/id 
                   sith/remote-id

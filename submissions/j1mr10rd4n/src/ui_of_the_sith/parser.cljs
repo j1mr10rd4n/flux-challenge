@@ -72,3 +72,15 @@
 (defmethod mutate 'sith/populate-from-remote
   [{:keys [ast] :as env} key params]
   {:dark-jedi-query ast})
+
+(defmethod mutate 'siths/adjust-list
+  [{:keys [state] :as env} key {:keys [index limit] :as params}]
+  (let [sith-query (om/get-query ui-of-the-sith.scrollable-list/Slot)
+        norm-list (:siths/list @state)
+        norm-refs {:siths/by-id (:siths/by-id @state)}
+        denorm-list (om/db->tree sith-query norm-list norm-refs)]
+  (condp = limit
+    :end (let [new-list (u/fill-siths :master (subvec denorm-list 0 (+ 1 index)))
+               norm-new-list (om/tree->db ui-of-the-sith.core/App {:siths/list new-list})
+               new-refs (meta norm-new-list)]
+             {:action #(swap! state assoc :siths/list (:siths/list norm-new-list) :siths/by-id (:siths/by-id new-refs))}))))
