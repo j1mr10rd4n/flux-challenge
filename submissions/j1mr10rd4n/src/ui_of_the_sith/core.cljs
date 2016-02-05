@@ -29,7 +29,7 @@
                       :sith/homeworld "unknown"
                       :sith/master-id nil
                       :sith/apprentice-id nil
-                      :sith/remote-id nil
+                      :sith/remote-id initial-sith-remote-id
                       :sith/master-remote-id nil
                       :sith/apprentice-remote-id nil}]
     (u/fill-siths :apprentice [initial-sith])))
@@ -106,11 +106,11 @@
   (query [this]
     `[{:siths/list ~(om/get-query sl/Slot)}])
   Object
-  (componentDidMount [this]
-    (let [initial-sith-id (get-in (om/props this) [:siths/list 0 :sith/id])]
-      (om/transact! this 
-                    `[(sith/set-remote-id ~{:id initial-sith-id :remote-id initial-sith-remote-id})
-                    [~[:siths/by-id initial-sith-id]]])))
+  ;(componentDidMount [this]
+    ;(let [initial-sith-id (get-in (om/props this) [:siths/list 0 :sith/id])]
+      ;(om/transact! this 
+                    ;`[(sith/set-remote-id ~{:id initial-sith-id :remote-id initial-sith-remote-id})
+                    ;[~[:siths/by-id initial-sith-id]]])))
   (render [this] 
     (let [{:keys [:siths/list]} (om/props this)
           list' (om/computed list
