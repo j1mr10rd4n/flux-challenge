@@ -10,8 +10,7 @@
       button-class)))
 
 (defn scroll [direction]
-  (.log js/console " - scroll detected " direction)
-  (om/transact! ui-of-the-sith.core/reconciler `[(dark-jedis/scroll {:direction ~direction})]))
+  (.log js/console " - scroll detected " (str direction)))
 
 (defn scroll-button-click
   [scroll-button direction homeworld-alert? e]
