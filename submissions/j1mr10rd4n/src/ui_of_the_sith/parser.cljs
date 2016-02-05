@@ -1,5 +1,6 @@
 (ns ui-of-the-sith.parser
   (:require [om.next :as om]
+            [ui-of-the-sith.config :as cfg]
             [ui-of-the-sith.util :as u]))
 
 ;; =============================================================================
@@ -61,7 +62,7 @@
         norm-refs {:siths/by-id (:siths/by-id @state)}
         denorm-list (om/db->tree sith-query norm-list norm-refs)
         new-list (condp = move-to
-                   :start (u/fill-siths :apprentice (subvec denorm-list index ui-of-the-sith.core/list-size))
+                   :start (u/fill-siths :apprentice (subvec denorm-list index cfg/list-size))
                    :end (u/fill-siths :master (subvec denorm-list 0 (+ 1 index))))
         norm-new-list (om/tree->db ui-of-the-sith.core/App {:siths/list new-list})
         new-refs (meta norm-new-list)]

@@ -1,6 +1,7 @@
 (ns ui-of-the-sith.scrollable-list
   (:require [om.next :as om :refer-macros [defui]]
-            [om.dom :as dom]))
+            [om.dom :as dom]
+            [ui-of-the-sith.config :as cfg]))
 
 (defn scroll-button-css-class
   [direction enabled?]
@@ -78,7 +79,7 @@
   [list direction]
   (condp = direction
     :up (not (nil? (get-in list [0 :sith/master-remote-id])))
-    :down (not (nil? (get-in list [(- ui-of-the-sith.core/list-size 1) :sith/apprentice-remote-id])))))
+    :down (not (nil? (get-in list [(- cfg/list-size 1) :sith/apprentice-remote-id])))))
 
 (defui ScrollableList
   Object

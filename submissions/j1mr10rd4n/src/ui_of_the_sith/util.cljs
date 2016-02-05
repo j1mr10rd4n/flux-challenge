@@ -1,5 +1,6 @@
 (ns ui-of-the-sith.util
-  (:require [om.next :as om :refer-macros [defui]]))
+  (:require [om.next :as om :refer-macros [defui]]
+            [ui-of-the-sith.config :as cfg]))
 
 (defn create-master-of
   [apprentice]
@@ -36,7 +37,7 @@
         (into [] (cons master siths'))))
 
 (defn fill-siths [relationship siths]
-  (let [fill-count (- ui-of-the-sith.core/list-size (count siths))
+  (let [fill-count (- cfg/list-size (count siths))
         fill-function (condp = relationship
                         :master prepend-master-to 
                         :apprentice append-apprentice-to)]

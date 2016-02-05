@@ -3,10 +3,10 @@
   (:require [goog.dom :as gdom]
             [goog.events :as ev]
             [goog.object :as o]
-            [goog.log :as glog]
             [cljs.core.async :as async :refer [<! >! put! chan]]
             [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
+            [ui-of-the-sith.config :as cfg]
             [ui-of-the-sith.parser :as p]
             [ui-of-the-sith.planet-monitor :as pm]
             [ui-of-the-sith.scrollable-list :as sl]
@@ -14,26 +14,13 @@
   (:import [goog Uri]
            [goog.net XhrIo]))
 
-(defonce logger 
-  (let [logger (glog/getLogger "sith.ui")]
-    (.setLevel logger goog.debug.Logger.Level.FINEST)
-    logger))
-
-(def base-url "http://localhost:3000/dark-jedis/")
-
-(def initial-sith-remote-id 3616)
-
-(def list-size 5)
-
-(def scroll-size 2)
-
 (def initial-siths
   (let [initial-sith {:sith/id (om/tempid)
                       :sith/name "Unknown"
                       :sith/homeworld "unknown"
                       :sith/master-id nil
                       :sith/apprentice-id nil
-                      :sith/remote-id initial-sith-remote-id
+                      :sith/remote-id cfg/initial-sith-remote-id
                       :sith/master-remote-id nil
                       :sith/apprentice-remote-id nil}]
     (u/fill-siths :apprentice [initial-sith])))
@@ -53,12 +40,12 @@
      :parser (om/parser {:read p/read :mutate p/mutate})
      :send (send-to-chan send-chan) 
      :remotes [:dark-jedi-query]
-     :logger logger}))
+     :logger cfg/logger}))
 
 (defn dark-jedi-service-loop [c]
   (go
     (loop [[{:keys [sith/id sith/remote-id]:as sith} cb] (<! c)]
-      (let [url (str base-url remote-id)
+      (let [url (str cfg/base-url remote-id)
             uri (Uri. url)
             xhr (XhrIo.)]
         (ev/listen xhr 
@@ -68,7 +55,7 @@
                        (let [xhr (o/get e "target")]
                          (if-let [status (= 200 (-> xhr .getStatus))]
                            (let [jedi-data (-> xhr .getResponseJson js->clj)]
-                             (.info logger (str "GOT RESPONSE FOR " (jedi-data "name") " WITH REMOTE ID " (jedi-data "id")))
+                             (.info cfg/logger (str "GOT RESPONSE FOR " (jedi-data "name") " WITH REMOTE ID " (jedi-data "id")))
                              (let [name (jedi-data "name")
                                    homeworld (get-in jedi-data ["homeworld" "name"])
                                    apprentice-remote-id (get-in jedi-data ["apprentice" "id"])
@@ -100,7 +87,7 @@
         (om/transact! component 
                       `[(sith/set-remote-id ~{:id master-id :remote-id master-remote-id})
                       [~[:siths/by-id id]]]))
-      (if (and (nil? apprentice-remote-id) (not= i list-size))  
+      (if (and (nil? apprentice-remote-id) (not= i cfg/list-size))  
         (om/transact! component
                       `[(siths/scroll ~{:index i :move-to :end})
                       [:siths/list]])))))
@@ -110,10 +97,10 @@
   (fn [direction]
     (condp = direction
       :up (om/transact! component
-                        `[(siths/scroll ~{:index (- list-size scroll-size 1) :move-to :end})
+                        `[(siths/scroll ~{:index (- cfg/list-size cfg/scroll-size 1) :move-to :end})
                         [:siths/list]])
       :down (om/transact! component
-                          `[(siths/scroll ~{:index scroll-size :move-to :start})
+                          `[(siths/scroll ~{:index cfg/scroll-size :move-to :start})
                           [:siths/list]]))))
 
 (defui App
