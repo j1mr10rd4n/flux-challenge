@@ -76,7 +76,9 @@
 
 (defn can-scroll?
   [list direction]
-  true)
+  (condp = direction
+    :up (not (nil? (get-in list [0 :sith/master-remote-id])))
+    :down (not (nil? (get-in list [(- ui-of-the-sith.core/list-size 1) :sith/apprentice-remote-id])))))
 
 (defui ScrollableList
   Object
