@@ -72,13 +72,8 @@
                                    populated-sith (assoc sith :sith/name name
                                                               :sith/homeworld homeworld
                                                               :sith/apprentice-remote-id apprentice-remote-id
-                                                              :sith/master-remote-id master-remote-id)
-                                   siths-by-id (:siths/by-id @reconciler)
-                                   siths-by-id' (assoc siths-by-id id populated-sith)]
-                               (cb {:siths/by-id siths-by-id'})
-                               
-                               
-                               )))))))
+                                                              :sith/master-remote-id master-remote-id)]
+                               (cb {[:siths/by-id id] populated-sith}))))))))
         (.send xhr uri))
       (recur (<! c)))))
 
