@@ -102,6 +102,12 @@
         (om/transact! component
                       `[(siths/adjust-list ~{:index i :limit :end})
                       [:siths/list]])))))
+
+(defn scroll-callback
+  [component]
+  (fn [direction]
+    (.log js/console "SCROLL CALLBACK " (name direction))))
+
 (defui App
   static om/IQuery
   (query [this]
@@ -110,7 +116,8 @@
   (render [this] 
     (let [{:keys [:siths/list]} (om/props this)
           list' (om/computed list
-                             {:populate-from-remote-callback (populate-from-remote-callback this)})]
+                             {:populate-from-remote-callback (populate-from-remote-callback this)
+                              :scroll-callback (scroll-callback this)})]
       (dom/div #js {:className "css-root"}
         (pm/planet-monitor)
         (sl/scrollable-list list')))))

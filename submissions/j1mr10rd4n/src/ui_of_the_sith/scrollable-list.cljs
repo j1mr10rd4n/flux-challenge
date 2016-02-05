@@ -9,15 +9,12 @@
       (str button-class " css-button-disabled")
       button-class)))
 
-(defn scroll [direction]
-  (.log js/console " - scroll detected " (str direction)))
-
 (defn scroll-button-click
   [scroll-button direction enabled? e]
-  (if enabled?
-    (scroll direction)
-    (doto e (.preventDefault) (.stopPropagation))
-  ))
+  (let [callback (:scroll-callback (om/get-computed (om/props scroll-button)))]
+    (if enabled?
+      (callback direction)
+      (doto e (.preventDefault) (.stopPropagation)))))
 
 (defui ScrollButton
   Object
@@ -89,8 +86,9 @@
           ;;slot-data (map #(merge (select-keys props [:obi-wan-planet]) (select-keys % [:name :homeworld :id])) dark-jedis)
           ;;; do i put the homeworld alert in the application state as a derived signal?
           ;;homeworld-alert? (some #(= % obi-wan-planet) (map #(% :homeworld) dark-jedis))
-          slots (map #(let[slot' (om/computed % (om/get-computed this))] (slot slot')) list)
-          scroll-buttons (map scroll-button (map #(hash-map :direction % :enabled? (can-scroll? list %)) [:up :down])) ]
+          slots (map #(let [slot' (om/computed % {:populate-from-remote-callback (:populate-from-remote-callback(om/get-computed this))})] (slot slot')) list)
+          button-props (map #(hash-map :direction % :enabled? (can-scroll? list %)) [:up :down])
+          scroll-buttons (map #(let [button' (om/computed % {:scroll-callback (:scroll-callback (om/get-computed (om/props this)))})] (scroll-button button')) button-props)]
       (dom/section #js {:className "css-scrollable-list"} 
         (apply dom/ul #js {:className "css-slots"} slots)
         (apply dom/div #js {:className "css-scroll-buttons"} scroll-buttons)))))
