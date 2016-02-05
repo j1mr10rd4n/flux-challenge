@@ -31,8 +31,8 @@
   (fn [{:keys [dark-jedi-query]} cb]
     (when dark-jedi-query
       (let [{[dark-jedi-query] :children} (om/query->ast dark-jedi-query)
-            {:keys [sith]} (:params dark-jedi-query)]
-        (put! c [sith cb])))))
+            {:keys [component]} (:params dark-jedi-query)]
+        (put! c [component cb])))))
 
 (def reconciler
   (om/reconciler
@@ -44,8 +44,9 @@
 
 (defn dark-jedi-service-loop [c]
   (go
-    (loop [[{:keys [sith/id sith/remote-id]:as sith} cb] (<! c)]
-      (let [url (str cfg/base-url remote-id)
+    (loop [[component cb] (<! c)]
+      (let [{:keys [sith/id sith/remote-id] :as sith} (om/props component)
+            url (str cfg/base-url remote-id)
             uri (Uri. url)
             xhr (XhrIo.)]
         (ev/listen xhr 
@@ -65,6 +66,7 @@
                                                               :sith/apprentice-remote-id apprentice-remote-id
                                                               :sith/master-remote-id master-remote-id)]
                                (cb {[:siths/by-id id] populated-sith}))))))))
+        (om/set-state! component {:xhr xhr})
         (.send xhr uri))
       (recur (<! c)))))
 

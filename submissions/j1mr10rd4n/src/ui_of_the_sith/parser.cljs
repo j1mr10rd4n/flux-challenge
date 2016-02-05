@@ -52,8 +52,9 @@
      :value {:keys `[~[:siths/by-id id]]}})
 
 (defmethod mutate 'sith/populate-from-remote
-  [{:keys [ast] :as env} key params]
-  {:dark-jedi-query ast})
+  [{:keys [ast component] :as env} key params]
+  (let [ast' (assoc-in ast [:params] (merge params {:component component}))]
+    {:dark-jedi-query ast'}))
 
 (defmethod mutate 'siths/scroll
   [{:keys [state] :as env} key {:keys [index move-to] :as params}]

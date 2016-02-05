@@ -67,6 +67,10 @@
                       [~[:siths/by-id id]]]))
       (if populated-from-remote?
         (populate-from-remote-callback id))))
+  (componentWillUnmount [this]
+    (let [{:keys [xhr]} (om/get-state this)]
+      (if xhr
+        (.abort xhr))))
   (render [this]
     (let [{:keys [sith/id sith/remote-id sith/name sith/homeworld]} (om/props this)]
       (dom/li #js {:className (slot-css-class false)}
