@@ -3,9 +3,9 @@
             [om.dom :as dom]))
 
 (defn scroll-button-css-class
-  [direction homeworld-alert?]
-  (let [button-class (str "css-button-" direction)]
-    (if homeworld-alert?
+  [direction enabled?]
+  (let [button-class (str "css-button-" (name direction))]
+    (if-not enabled?
       (str button-class " css-button-disabled")
       button-class)))
 
@@ -13,20 +13,18 @@
   (.log js/console " - scroll detected " (str direction)))
 
 (defn scroll-button-click
-  [scroll-button direction homeworld-alert? e]
-  (if homeworld-alert?
-    (doto e (.preventDefault) (.stopPropagation))
+  [scroll-button direction enabled? e]
+  (if enabled?
     (scroll direction)
+    (doto e (.preventDefault) (.stopPropagation))
   ))
 
 (defui ScrollButton
   Object
   (render [this]
-    (let [props (om/props this)
-          direction (props :direction)
-          homeworld-alert? (props :homeworld-alert?)]
-    (dom/button #js {:className (scroll-button-css-class direction homeworld-alert?)
-                     :onClick #(scroll-button-click this direction homeworld-alert? %)}))))
+    (let [{:keys [direction enabled?]} (om/props this)]
+    (dom/button #js {:className (scroll-button-css-class direction enabled?)
+                     :onClick #(scroll-button-click this direction enabled? %)}))))
 
 (def scroll-button (om/factory ScrollButton))
 
@@ -79,6 +77,10 @@
 
 (def slot (om/factory Slot {:keyfn :sith/id}))
 
+(defn can-scroll?
+  [list direction]
+  true)
+
 (defui ScrollableList
   Object
   (render [this]
@@ -88,11 +90,9 @@
           ;;; do i put the homeworld alert in the application state as a derived signal?
           ;;homeworld-alert? (some #(= % obi-wan-planet) (map #(% :homeworld) dark-jedis))
           slots (map #(let[slot' (om/computed % (om/get-computed this))] (slot slot')) list)
-          ]
+          scroll-buttons (map scroll-button (map #(hash-map :direction % :enabled? (can-scroll? list %)) [:up :down])) ]
       (dom/section #js {:className "css-scrollable-list"} 
         (apply dom/ul #js {:className "css-slots"} slots)
-        ;(apply dom/div #js {:className "css-scroll-buttons"} 
-               ;(map scroll-button (map #(merge {:homeworld-alert? homeworld-alert?} (hash-map :direction %)) ["up" "down"])))
-))))
+        (apply dom/div #js {:className "css-scroll-buttons"} scroll-buttons)))))
 
 (def scrollable-list (om/factory ScrollableList))
