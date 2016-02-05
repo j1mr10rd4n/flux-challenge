@@ -36,7 +36,7 @@
         (into [] (cons master siths'))))
 
 (defn fill-siths [relationship siths]
-  (let [fill-count (- 5 (count siths))
+  (let [fill-count (- ui-of-the-sith.core/list-size (count siths))
         fill-function (condp = relationship
                         :master prepend-master-to 
                         :apprentice append-apprentice-to)]

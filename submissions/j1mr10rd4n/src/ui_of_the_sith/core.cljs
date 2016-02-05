@@ -23,6 +23,8 @@
 
 (def initial-sith-remote-id 3616)
 
+(def list-size 5)
+
 (def initial-siths
   (let [initial-sith {:sith/id (om/tempid)
                       :sith/name "Unknown"
@@ -92,7 +94,7 @@
         (om/transact! component 
                       `[(sith/set-remote-id ~{:id apprentice-id :remote-id apprentice-remote-id})
                       [~[:siths/by-id id]]]))
-      (if (and (nil? apprentice-remote-id) (not= i 4))  
+      (if (and (nil? apprentice-remote-id) (not= i list-size))  
         (om/transact! component
                       `[(siths/adjust-list ~{:index i :limit :end})
                       [:siths/list]])))))
