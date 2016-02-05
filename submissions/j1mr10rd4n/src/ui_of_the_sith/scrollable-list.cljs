@@ -74,8 +74,9 @@
   (render [this]
     (let [{:keys [sith/id sith/remote-id sith/name sith/homeworld]} (om/props this)]
       (dom/li #js {:className (slot-css-class false)}
-          (dom/h3 nil (str remote-id " " name))
-          (dom/h6 nil (str "Homeworld: " homeworld))))))
+          (dom/h3 nil name)
+          (if-not (nil? homeworld)
+            (dom/h6 nil (str "Homeworld: " homeworld)))))))
 
 (def slot (om/factory Slot {:keyfn :sith/id}))
 

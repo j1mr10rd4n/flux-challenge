@@ -16,8 +16,8 @@
 
 (def initial-siths
   (let [initial-sith {:sith/id (om/tempid)
-                      :sith/name "Unknown"
-                      :sith/homeworld "unknown"
+                      :sith/name nil
+                      :sith/homeworld nil
                       :sith/master-id nil
                       :sith/apprentice-id nil
                       :sith/remote-id cfg/initial-sith-remote-id

@@ -5,8 +5,8 @@
 (defn create-master-of
   [apprentice]
     {:sith/id (om/tempid)
-     :sith/name (str "Master of " (apprentice :sith/name))
-     :sith/homeworld "unknown"
+     :sith/name nil
+     :sith/homeworld nil
      :sith/master-id nil
      :sith/apprentice-id (apprentice :sith/id)
      :sith/remote-id (apprentice :sith/master-remote-id)
@@ -16,8 +16,8 @@
 (defn create-apprentice-of
   [master]
     {:sith/id (om/tempid)  
-     :sith/name (str "Apprentice of " (master :sith/name))
-     :sith/homeworld "unknown"
+     :sith/name nil
+     :sith/homeworld nil
      :sith/master-id (master :sith/id)
      :sith/apprentice-id nil
      :sith/remote-id (master :sith/apprentice-remote-id)
