@@ -47,7 +47,6 @@
    
 (defmethod mutate 'obi-wan-planet/update
   [{:keys [state] :as env} key {:keys [planet-name] :as params}]
-    (.log js/console "mutate :update-planet ")
     {:value {:keys :obi-wan-planet}
      :action #(swap! state assoc :obi-wan-planet planet-name) })
 
