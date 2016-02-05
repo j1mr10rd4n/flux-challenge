@@ -66,7 +66,7 @@
                        (let [xhr (o/get e "target")]
                          (if-let [status (= 200 (-> xhr .getStatus))]
                            (let [jedi-data (-> xhr .getResponseJson js->clj)]
-                             (.log js/console "GOT RESPONSE FOR " (jedi-data "name") " WITH REMOTE ID " (jedi-data "id"))
+                             (.info logger (str "GOT RESPONSE FOR " (jedi-data "name") " WITH REMOTE ID " (jedi-data "id")))
                              (let [name (jedi-data "name")
                                    homeworld (get-in jedi-data ["homeworld" "name"])
                                    apprentice-remote-id (get-in jedi-data ["apprentice" "id"])
