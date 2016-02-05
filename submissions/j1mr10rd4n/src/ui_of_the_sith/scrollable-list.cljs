@@ -42,7 +42,14 @@
     [:siths/by-id id])
   static om/IQuery
   (query [this]
-    [:sith/id :sith/name :sith/homeworld :sith/remote-id])
+    [:sith/id
+     :sith/name
+     :sith/homeworld
+     :sith/remote-id
+     :sith/apprentice-id
+     :sith/apprentice-remote-id
+     :sith/master-id
+     :sith/master-remote-id])
   Object
   (componentDidUpdate [this prevProps prevState]
     (let [{:keys [sith/id 
