@@ -45,25 +45,6 @@
             siths
             (range fill-count))))
 
-(defn first-pending-sith? [list]
-  (let [pending-sith (filter (fn [{:keys [remote-id pending]}] 
-                               (and (= true pending) 
-                                    (not (= nil remote-id))))
-                             list)]
-    (if (empty? pending-sith)
-      nil
-      (first pending-sith))))
-
-(defn contains-sith-with-no-apprentice? [siths]
-  (not-empty (filter (fn [{:keys [pending apprentice-remote-id]}] 
-                         (and (not pending) (nil? apprentice-remote-id)))
-                       siths)))
-
-(defn contains-sith-with-no-master? [siths]
-  (not-empty (filter (fn [{:keys [pending master-remote-id]}] 
-                         (and (not pending) (nil? master-remote-id)))
-                       siths)))
-
 (defn index-of [coll v]
   (let [i (count (take-while #(not= v %) coll))]
     (when (or (< i (count coll))
