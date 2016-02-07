@@ -7,7 +7,7 @@
 (def base-url "ws://localhost:4000")
 
 (defn socket
-  [callback]
+  [update-planet-callback]
   (let [socket (WebSocket.)]
     (ev/listen socket
                #js [WebSocket.EventType.CLOSED
@@ -23,7 +23,7 @@
                      (let [planet-name (-> e (aget "message") JSON.parse (aget "name"))]
                        ;(.log js/console 
                          ;(clojure.string/join " " [(.-type e) log-message-content]))
-                       (callback planet-name)))
+                       (update-planet-callback planet-name)))
                    )))
     socket))
 
@@ -37,11 +37,10 @@
     [:obi-wan-planet])
   Object
   (componentWillMount [this]
-    (let [callback (fn [planet-name]
-                     (om/transact! this
-                                   `[(obi-wan-planet/update {:planet-name ~planet-name}) [:obi-wan-planet]]))]
-      (om/set-state! this {:socket (socket callback)})
-    (.open ((om/get-state this) :socket) base-url)))
+    (let [cb (:update-planet-callback (om/get-computed (om/props this)))]
+      (om/set-state! this {:socket (socket cb)})
+    (.open ((om/get-state this) :socket) base-url)
+    ))
   (componentWillUnmount [this]
     (let [socket ((om/get-state this) :socket)]
       (.close socket)))

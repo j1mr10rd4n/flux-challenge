@@ -26,8 +26,9 @@
 
 (def scroll-button (om/factory ScrollButton))
 
-(defn slot-css-class [homeworld-alert?]
-  (if homeworld-alert?
+(defn slot-css-class 
+  [{:keys [sith/homeworld obi-wan-planet]}]
+  (if (= homeworld obi-wan-planet)
     "css-slot homeworld-alert"
     "css-slot"))
 
@@ -58,7 +59,8 @@
                   sith/name] :as sith} (om/props this)
           prev-remote-id (:sith/remote-id prevProps)
           prev-name (:sith/name prevProps)
-          remote-id-changed? (not (= remote-id prev-remote-id))
+          remote-id-changed? (and (not (= remote-id prev-remote-id)) 
+                                  (not (nil? remote-id)))
           populated-from-remote? (not (= name prev-name))
           populate-from-remote-callback (:populate-from-remote-callback (om/get-computed this))]
       (if remote-id-changed?
@@ -72,9 +74,9 @@
       (if xhr
         (.abort xhr))))
   (render [this]
-    (let [{:keys [sith/id sith/remote-id sith/name sith/homeworld]} (om/props this)]
-      (dom/li #js {:className (slot-css-class false)}
-          (dom/h3 nil name)
+    (let [{:keys [sith/id sith/remote-id sith/name sith/homeworld obi-wan-planet] :as props} (om/props this)]
+      (dom/li #js {:className (slot-css-class props)}
+          (dom/h3 nil (str name))
           (if-not (nil? homeworld)
             (dom/h6 nil (str "Homeworld: " homeworld)))))))
 
@@ -89,16 +91,16 @@
 (defui ScrollableList
   Object
   (render [this]
-    (let [list (om/props this)
-          ;{:keys [:siths/list]} props
-          ;;slot-data (map #(merge (select-keys props [:obi-wan-planet]) (select-keys % [:name :homeworld :id])) dark-jedis)
-          ;;; do i put the homeworld alert in the application state as a derived signal?
-          ;;homeworld-alert? (some #(= % obi-wan-planet) (map #(% :homeworld) dark-jedis))
-          slots (map #(let [slot' (om/computed % {:populate-from-remote-callback (:populate-from-remote-callback(om/get-computed this))})] (slot slot')) list)
-          button-props (map #(hash-map :direction % :enabled? (can-scroll? list %)) [:up :down])
-          scroll-buttons (map #(let [button' (om/computed % {:scroll-callback (:scroll-callback (om/get-computed (om/props this)))})] (scroll-button button')) button-props)]
+    (let [{:keys [obi-wan-planet siths/list]} (om/props this)
+          {:keys [populate-from-remote-callback scroll-callback]} (om/get-computed list)
+          scrollable-list-props (map #(merge % {:obi-wan-planet obi-wan-planet}) list)
+          ; DONT DO THIS! YOU'LL LOSE ALL YOUR META! - possible om improvement? on blank path
+          ;scrollable-list-props-wrong (map #(merge {:obi-wan-planet "miaow"} %) list-with-computed)
+          scrollable-list-props-with-callback (map #(om/computed % {:populate-from-remote-callback populate-from-remote-callback}) scrollable-list-props)
+          scroll-button-props (map #(hash-map :direction % :enabled? (can-scroll? list %)) [:up :down])
+          scroll-button-props-with-callback (map #(om/computed % {:scroll-callback scroll-callback}) scroll-button-props)]
       (dom/section #js {:className "css-scrollable-list"} 
-        (apply dom/ul #js {:className "css-slots"} slots)
-        (apply dom/div #js {:className "css-scroll-buttons"} scroll-buttons)))))
+        (apply dom/ul #js {:className "css-slots"} (map slot scrollable-list-props-with-callback))
+        (apply dom/div #js {:className "css-scroll-buttons"} (map scroll-button scroll-button-props-with-callback))))))
 
 (def scrollable-list (om/factory ScrollableList))

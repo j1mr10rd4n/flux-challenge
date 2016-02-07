@@ -105,19 +105,30 @@
                           `[(siths/scroll ~{:index cfg/scroll-size :move-to :start})
                           [:siths/list]]))))
 
+(defn update-planet-callback
+  [component]
+  (fn [planet-name]
+    (om/transact! component
+                  `[(obi-wan-planet/update {:planet-name ~planet-name}) 
+                    [:obi-wan-planet :siths/list]])))
+
 (defui App
   static om/IQuery
   (query [this]
     `[:obi-wan-planet {:siths/list ~(om/get-query sl/Slot)}])
   Object
   (render [this] 
-    (let [{:keys [:obi-wan-planet :siths/list]} (om/props this)
+    (let [{:keys [obi-wan-planet siths/list]} (om/props this)
           list' (om/computed list
                              {:populate-from-remote-callback (populate-from-remote-callback this)
-                              :scroll-callback (scroll-callback this)})]
+                              :scroll-callback (scroll-callback this)})
+          scrollable-list-props {:obi-wan-planet obi-wan-planet :siths/list list'}
+          planet-monitor-props (om/computed {:obi-wan-planet obi-wan-planet} 
+                                            {:update-planet-callback (update-planet-callback this)}) 
+          ]
       (dom/div #js {:className "css-root"}
-        (pm/planet-monitor {:obi-wan-planet obi-wan-planet})
-        (sl/scrollable-list list')))))
+        (pm/planet-monitor planet-monitor-props)
+        (sl/scrollable-list scrollable-list-props)))))
 
 (om/add-root! reconciler
               App (gdom/getElement "app"))
