@@ -83,10 +83,12 @@
 (def slot (om/factory Slot {:keyfn :sith/id}))
 
 (defn can-scroll?
-  [list direction]
+  [list obi-wan-planet direction]
+  (and
+  (empty? (filter #(= obi-wan-planet %) (map #(:sith/homeworld %) list)))
   (condp = direction
     :up (not (nil? (get-in list [0 :sith/master-remote-id])))
-    :down (not (nil? (get-in list [(- cfg/list-size 1) :sith/apprentice-remote-id])))))
+    :down (not (nil? (get-in list [(- cfg/list-size 1) :sith/apprentice-remote-id]))))))
 
 (defui ScrollableList
   Object
@@ -97,7 +99,7 @@
           ; DONT DO THIS! YOU'LL LOSE ALL YOUR META! - possible om improvement? on blank path
           ;scrollable-list-props-wrong (map #(merge {:obi-wan-planet "miaow"} %) list-with-computed)
           scrollable-list-props-with-callback (map #(om/computed % {:populate-from-remote-callback populate-from-remote-callback}) scrollable-list-props)
-          scroll-button-props (map #(hash-map :direction % :enabled? (can-scroll? list %)) [:up :down])
+          scroll-button-props (map #(hash-map :direction % :enabled? (can-scroll? list obi-wan-planet %)) [:up :down])
           scroll-button-props-with-callback (map #(om/computed % {:scroll-callback scroll-callback}) scroll-button-props)]
       (dom/section #js {:className "css-scrollable-list"} 
         (apply dom/ul #js {:className "css-slots"} (map slot scrollable-list-props-with-callback))
