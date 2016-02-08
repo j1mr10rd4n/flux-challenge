@@ -28,9 +28,23 @@
 
 (defn slot-css-class 
   [{:keys [sith/homeworld obi-wan-planet]}]
-  (if (= homeworld obi-wan-planet)
+  (if (and (not (nil? homeworld)) (= homeworld obi-wan-planet))
     "css-slot homeworld-alert"
     "css-slot"))
+
+(defn abort-xhr [{:keys [xhr]}]
+    (if xhr
+      (.abort xhr)))
+
+(defn abort-and-restart-xhr-if-required
+  [{:keys [xhr]} matching-planet-in-list?]
+  (if xhr
+    (if matching-planet-in-list?
+      ; abort request if there is a match
+      (.abort xhr)
+      ; restart request if there is no match and an aborted request
+      (if (= 7 (.getLastErrorCode xhr))
+        (.send xhr (.getLastUri xhr))))))
 
 (defui Slot
   static om/Ident
@@ -56,7 +70,8 @@
   (componentDidUpdate [this prevProps prevState]
     (let [{:keys [sith/id 
                   sith/remote-id
-                  sith/name] :as sith} (om/props this)
+                  sith/name
+                  matching-planet-in-list?] :as sith} (om/props this)
           prev-remote-id (:sith/remote-id prevProps)
           prev-name (:sith/name prevProps)
           remote-id-changed? (and (not (= remote-id prev-remote-id)) 
@@ -68,24 +83,27 @@
                       `[(sith/populate-from-remote ~{:sith sith})
                       [~[:siths/by-id id]]]))
       (if populated-from-remote?
-        (populate-from-remote-callback id))))
+        (populate-from-remote-callback id))
+      (abort-and-restart-xhr-if-required (om/get-state this) matching-planet-in-list?)))
   (componentWillUnmount [this]
-    (let [{:keys [xhr]} (om/get-state this)]
-      (if xhr
-        (.abort xhr))))
+    (abort-xhr (om/get-state this)))
   (render [this]
     (let [{:keys [sith/id sith/remote-id sith/name sith/homeworld obi-wan-planet] :as props} (om/props this)]
       (dom/li #js {:className (slot-css-class props)}
-          (dom/h3 nil (str name))
+          (dom/h3 nil name)
           (if-not (nil? homeworld)
             (dom/h6 nil (str "Homeworld: " homeworld)))))))
 
 (def slot (om/factory Slot {:keyfn :sith/id}))
 
+(defn homeworlds-matching-planet
+  [siths planet]
+  (filter #(and (= planet %) (not (nil? %))) (map #(:sith/homeworld %) siths)))
+
 (defn can-scroll?
   [list obi-wan-planet direction]
   (and
-  (empty? (filter #(= obi-wan-planet %) (map #(:sith/homeworld %) list)))
+  (empty? (homeworlds-matching-planet list obi-wan-planet))
   (condp = direction
     :up (not (nil? (get-in list [0 :sith/master-remote-id])))
     :down (not (nil? (get-in list [(- cfg/list-size 1) :sith/apprentice-remote-id]))))))
@@ -95,7 +113,7 @@
   (render [this]
     (let [{:keys [obi-wan-planet siths/list]} (om/props this)
           {:keys [populate-from-remote-callback scroll-callback]} (om/get-computed list)
-          scrollable-list-props (map #(merge % {:obi-wan-planet obi-wan-planet}) list)
+          scrollable-list-props (map #(merge % {:obi-wan-planet obi-wan-planet :matching-planet-in-list? (seq (homeworlds-matching-planet list obi-wan-planet))}) list)
           ; DONT DO THIS! YOU'LL LOSE ALL YOUR META! - possible om improvement? on blank path
           ;scrollable-list-props-wrong (map #(merge {:obi-wan-planet "miaow"} %) list-with-computed)
           scrollable-list-props-with-callback (map #(om/computed % {:populate-from-remote-callback populate-from-remote-callback}) scrollable-list-props)
