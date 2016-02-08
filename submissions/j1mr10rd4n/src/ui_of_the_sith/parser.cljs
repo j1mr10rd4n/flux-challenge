@@ -1,5 +1,6 @@
 (ns ui-of-the-sith.parser
   (:require [om.next :as om]
+            [ui-of-the-sith.scrollable-list :as sl]
             [ui-of-the-sith.config :as cfg]
             [ui-of-the-sith.util :as u]))
 
@@ -61,15 +62,15 @@
     {:dark-jedi-query ast'}))
 
 (defmethod mutate 'siths/scroll
-  [{:keys [state] :as env} key {:keys [index move-to] :as params}]
-  (let [sith-query (om/get-query ui-of-the-sith.scrollable-list/Slot)
+  [{:keys [state component] :as env} key {:keys [index move-to] :as params}]
+  (let [sith-query (om/get-query sl/Slot)
         norm-list (:siths/list @state)
         norm-refs {:siths/by-id (:siths/by-id @state)}
         denorm-list (om/db->tree sith-query norm-list norm-refs)
         new-list (condp = move-to
                    :start (u/fill-siths :apprentice (subvec denorm-list index cfg/list-size))
                    :end (u/fill-siths :master (subvec denorm-list 0 (+ 1 index))))
-        norm-new-list (om/tree->db ui-of-the-sith.core/App {:siths/list new-list})
+        norm-new-list (om/tree->db component {:siths/list new-list})
         new-refs (meta norm-new-list)]
     {:action #(swap! state 
                      assoc
