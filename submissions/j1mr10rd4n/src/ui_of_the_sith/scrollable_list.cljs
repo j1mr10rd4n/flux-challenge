@@ -3,28 +3,42 @@
             [om.dom :as dom]
             [ui-of-the-sith.config :as cfg]))
 
-(defn scroll-button-css-class
-  [direction enabled?]
-  (let [button-class (str "css-button-" (name direction))]
-    (if-not enabled?
-      (str button-class " css-button-disabled")
-      button-class)))
+(defn set-scroll-button-state
+  [button {:keys [direction obi-wan-planet-match? at-start? at-end? scroll-button-callback]}]
+   (let [enabled? (and (nil? obi-wan-planet-match?)
+                      (condp = direction
+                        :up (not at-start?)
+                        :down (not at-end?)))
 
-(defn scroll-button-click
-  [scroll-button direction enabled? e]
-  (let [callback (:scroll-callback (om/get-computed (om/props scroll-button)))]
-    (if enabled?
-      (callback direction)
-      (doto e (.preventDefault) (.stopPropagation)))))
+         css-class (let [button-class (str "css-button-" (name direction))]
+                     (if-not enabled?
+                       (str button-class " css-button-disabled")
+                       button-class)) 
+         on-click (if enabled? 
+                    (fn [e] 
+                      (.log js/console "CLICK!")
+                      (scroll-button-callback direction)
+                    )
+                    (fn [e] (doto e (.preventDefault) (.stopPropagation))))]
+    (om/set-state! button {:enabled? enabled?
+                           :css-class css-class
+                           :on-click on-click})))
 
 (defui ScrollButton
   Object
+  (componentWillMount [this]
+    (set-scroll-button-state this (om/props this)))
+  (componentWillReceiveProps [this nextProps]
+    (set-scroll-button-state this nextProps))
   (render [this]
-    (let [{:keys [direction enabled?]} (om/props this)]
-    (dom/button #js {:className (scroll-button-css-class direction enabled?)
-                     :onClick #(scroll-button-click this direction enabled? %)}))))
+    (let [{:keys [direction]} (om/props this)
+          {:keys [enabled? css-class on-click]} (om/get-state this)]
+    (dom/button #js {:className css-class
+                     :onClick on-click}))))
 
-(def scroll-button (om/factory ScrollButton))
+(defn scroll-button
+  [state direction]
+  ((om/factory ScrollButton) (merge state {:direction direction})))
 
 (defn slot-css-class 
   [{:keys [sith/homeworld obi-wan-planet]}]
@@ -100,27 +114,30 @@
   [siths planet]
   (filter #(and (= planet %) (not (nil? %))) (map #(:sith/homeworld %) siths)))
 
-(defn can-scroll?
-  [list obi-wan-planet direction]
-  (and
-  (empty? (homeworlds-matching-planet list obi-wan-planet))
-  (condp = direction
-    :up (not (nil? (get-in list [0 :sith/master-remote-id])))
-    :down (not (nil? (get-in list [(- cfg/list-size 1) :sith/apprentice-remote-id]))))))
+(defn set-button-state
+  [scrollable-list {:keys [obi-wan-planet siths/list] :as props}]
+  (om/set-state! scrollable-list {:at-start? (nil? (get-in list [0 :sith/master-remote-id]))
+                                  :at-end? (nil? (get-in list [(- cfg/list-size 1) :sith/apprentice-remote-id]))
+                                  :obi-wan-planet-match? (seq (filter #(and (= obi-wan-planet %) (not (nil? %))) (map #(:sith/homeworld %) list)))
+                                  :scroll-button-callback (:scroll-callback (om/get-computed list))}))
 
 (defui ScrollableList
   Object
+  (componentWillMount
+    [this]
+      (set-button-state this (om/props this)))
+  (componentWillReceiveProps 
+    [this nextProps]
+    (set-button-state this nextProps))
   (render [this]
     (let [{:keys [obi-wan-planet siths/list]} (om/props this)
           {:keys [populate-from-remote-callback scroll-callback]} (om/get-computed list)
           scrollable-list-props (map #(merge % {:obi-wan-planet obi-wan-planet :matching-planet-in-list? (seq (homeworlds-matching-planet list obi-wan-planet))}) list)
           ; DONT DO THIS! YOU'LL LOSE ALL YOUR META! - possible om improvement? on blank path
           ;scrollable-list-props-wrong (map #(merge {:obi-wan-planet "miaow"} %) list-with-computed)
-          scrollable-list-props-with-callback (map #(om/computed % {:populate-from-remote-callback populate-from-remote-callback}) scrollable-list-props)
-          scroll-button-props (map #(hash-map :direction % :enabled? (can-scroll? list obi-wan-planet %)) [:up :down])
-          scroll-button-props-with-callback (map #(om/computed % {:scroll-callback scroll-callback}) scroll-button-props)]
-      (dom/section #js {:className "css-scrollable-list"} 
+          scrollable-list-props-with-callback (map #(om/computed % {:populate-from-remote-callback populate-from-remote-callback}) scrollable-list-props)]
+      (dom/section #js {:className "css-scrollable-list"}
         (apply dom/ul #js {:className "css-slots"} (map slot scrollable-list-props-with-callback))
-        (apply dom/div #js {:className "css-scroll-buttons"} (map scroll-button scroll-button-props-with-callback))))))
+        (apply dom/div #js {:className "css-scroll-buttons"} (map #(scroll-button (om/get-state this) %) [:up :down]))))))
 
 (def scrollable-list (om/factory ScrollableList))
