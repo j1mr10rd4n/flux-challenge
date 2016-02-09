@@ -105,18 +105,20 @@
           (if-not (nil? homeworld)
             (dom/h6 nil (str "Homeworld: " homeworld)))))))
 
-(def slot (om/factory Slot {:keyfn :sith/id}))
-
-(defn homeworlds-matching-planet
-  [siths planet]
-  (filter #(and (= planet %) (not (nil? %))) (map #(:sith/homeworld %) siths)))
+(defn slot
+  [{:keys [obi-wan-planet obi-wan-planet-match? populate-from-remote-callback] :as state} sith]
+  (let [props (merge sith {:obi-wan-planet obi-wan-planet :matching-planet-in-list? obi-wan-planet-match?})
+        computed-props (om/computed props {:populate-from-remote-callback populate-from-remote-callback})]
+    ((om/factory Slot {:keyfn :sith/id}) computed-props)))
 
 (defn set-list-state
   [scrollable-list {:keys [obi-wan-planet siths/list] :as props}]
   (om/set-state! scrollable-list {:at-start? (nil? (get-in list [0 :sith/master-remote-id]))
                                   :at-end? (nil? (get-in list [(- cfg/list-size 1) :sith/apprentice-remote-id]))
+                                  :obi-wan-planet obi-wan-planet
                                   :obi-wan-planet-match? (seq (filter #(and (= obi-wan-planet %) (not (nil? %))) (map #(:sith/homeworld %) list)))
-                                  :scroll-button-callback (:scroll-callback (om/get-computed list))}))
+                                  :scroll-button-callback (:scroll-callback (om/get-computed list))
+                                  :populate-from-remote-callback (:populate-from-remote-callback (om/get-computed list))}))
 
 (defui ScrollableList
   Object
@@ -127,14 +129,9 @@
     [this nextProps]
     (set-list-state this nextProps))
   (render [this]
-    (let [{:keys [obi-wan-planet siths/list]} (om/props this)
-          {:keys [populate-from-remote-callback scroll-callback]} (om/get-computed list)
-          scrollable-list-props (map #(merge % {:obi-wan-planet obi-wan-planet :matching-planet-in-list? (seq (homeworlds-matching-planet list obi-wan-planet))}) list)
-          ; DONT DO THIS! YOU'LL LOSE ALL YOUR META! - possible om improvement? on blank path
-          ;scrollable-list-props-wrong (map #(merge {:obi-wan-planet "miaow"} %) list-with-computed)
-          scrollable-list-props-with-callback (map #(om/computed % {:populate-from-remote-callback populate-from-remote-callback}) scrollable-list-props)]
+    (let [{:keys [obi-wan-planet siths/list]} (om/props this)]
       (dom/section #js {:className "css-scrollable-list"}
-        (apply dom/ul #js {:className "css-slots"} (map slot scrollable-list-props-with-callback))
+        (apply dom/ul #js {:className "css-slots"} (map #(slot (om/get-state this) %) list))
         (apply dom/div #js {:className "css-scroll-buttons"} (map #(scroll-button (om/get-state this) %) [:up :down]))))))
 
 (def scrollable-list (om/factory ScrollableList))
