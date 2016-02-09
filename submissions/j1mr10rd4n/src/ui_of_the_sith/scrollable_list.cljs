@@ -78,6 +78,12 @@
         (om/transact! this
                       `[(sith/populate-from-remote ~{:sith sith})
                       [~[:siths/by-id id]]]))))    
+  (componentWillReceiveProps
+    [this nextProps]
+    (let [{:keys [sith/remote-id]} (om/props this)
+          next-remote-id (:sith/remote-id nextProps)
+          remote-id-changed? (and (not (nil? next-remote-id))(not (= remote-id next-remote-id)))]
+      (om/update-state! this merge {:remote-id-changed? remote-id-changed?})))
   (componentDidUpdate [this prevProps prevState]
     (let [{:keys [sith/id 
                   sith/remote-id
@@ -85,10 +91,9 @@
                   matching-planet-in-list?] :as sith} (om/props this)
           prev-remote-id (:sith/remote-id prevProps)
           prev-name (:sith/name prevProps)
-          remote-id-changed? (and (not (= remote-id prev-remote-id)) 
-                                  (not (nil? remote-id)))
           populated-from-remote? (not (= name prev-name))
-          populate-from-remote-callback (:populate-from-remote-callback (om/get-computed this))]
+          populate-from-remote-callback (:populate-from-remote-callback (om/get-computed this))
+          {:keys [remote-id-changed?]} (om/get-state this)]
       (if remote-id-changed?
         (om/transact! this
                       `[(sith/populate-from-remote ~{:sith sith})

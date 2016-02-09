@@ -65,9 +65,9 @@
                                                               :sith/homeworld homeworld
                                                               :sith/apprentice-remote-id apprentice-remote-id
                                                               :sith/master-remote-id master-remote-id)]
-                               (om/set-state! component {:xhr nil})
+                               (om/update-state! component merge {:xhr nil})
                                (cb {[:siths/by-id id] populated-sith}))))))))
-        (om/set-state! component {:xhr xhr})
+        (om/update-state! component merge {:xhr xhr})
         (.send xhr uri))
       (recur (<! c)))))
 
