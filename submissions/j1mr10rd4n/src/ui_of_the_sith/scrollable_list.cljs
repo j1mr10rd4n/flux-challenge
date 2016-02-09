@@ -15,10 +15,7 @@
                        (str button-class " css-button-disabled")
                        button-class)) 
          on-click (if enabled? 
-                    (fn [e] 
-                      (.log js/console "CLICK!")
-                      (scroll-button-callback direction)
-                    )
+                    (fn [e] (scroll-button-callback direction))
                     (fn [e] (doto e (.preventDefault) (.stopPropagation))))]
     (om/set-state! button {:enabled? enabled?
                            :css-class css-class
@@ -114,7 +111,7 @@
   [siths planet]
   (filter #(and (= planet %) (not (nil? %))) (map #(:sith/homeworld %) siths)))
 
-(defn set-button-state
+(defn set-list-state
   [scrollable-list {:keys [obi-wan-planet siths/list] :as props}]
   (om/set-state! scrollable-list {:at-start? (nil? (get-in list [0 :sith/master-remote-id]))
                                   :at-end? (nil? (get-in list [(- cfg/list-size 1) :sith/apprentice-remote-id]))
@@ -125,10 +122,10 @@
   Object
   (componentWillMount
     [this]
-      (set-button-state this (om/props this)))
+      (set-list-state this (om/props this)))
   (componentWillReceiveProps 
     [this nextProps]
-    (set-button-state this nextProps))
+    (set-list-state this nextProps))
   (render [this]
     (let [{:keys [obi-wan-planet siths/list]} (om/props this)
           {:keys [populate-from-remote-callback scroll-callback]} (om/get-computed list)
