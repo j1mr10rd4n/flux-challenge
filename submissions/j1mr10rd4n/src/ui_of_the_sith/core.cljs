@@ -65,7 +65,8 @@
                                                               :sith/homeworld homeworld
                                                               :sith/apprentice-remote-id apprentice-remote-id
                                                               :sith/master-remote-id master-remote-id)]
-                               (om/update-state! component merge {:xhr nil})
+                               (om/update-state! component merge {:xhr nil 
+                                                                  :populated-from-remote? true})
                                (cb {[:siths/by-id id] populated-sith}))))))))
         (om/update-state! component merge {:xhr xhr})
         (.send xhr uri))
@@ -125,8 +126,7 @@
                               :scroll-callback (scroll-callback this)})
           scrollable-list-props {:obi-wan-planet obi-wan-planet :siths/list list'}
           planet-monitor-props (om/computed {:obi-wan-planet obi-wan-planet} 
-                                            {:update-planet-callback (update-planet-callback this)}) 
-          ]
+                                            {:update-planet-callback (update-planet-callback this)})]
       (dom/div #js {:className "css-root"}
         (pm/planet-monitor planet-monitor-props)
         (sl/scrollable-list scrollable-list-props)))))

@@ -28,8 +28,7 @@
   (componentWillReceiveProps [this nextProps]
     (set-scroll-button-state this nextProps))
   (render [this]
-    (let [{:keys [direction]} (om/props this)
-          {:keys [enabled? css-class on-click]} (om/get-state this)]
+    (let [{:keys [css-class on-click]} (om/get-state this)]
     (dom/button #js {:className css-class
                      :onClick on-click}))))
 
@@ -37,18 +36,12 @@
   [state direction]
   ((om/factory ScrollButton) (merge state {:direction direction})))
 
-(defn slot-css-class 
-  [{:keys [sith/homeworld obi-wan-planet]}]
-  (if (and (not (nil? homeworld)) (= homeworld obi-wan-planet))
-    "css-slot homeworld-alert"
-    "css-slot"))
-
 (defn abort-xhr [{:keys [xhr]}]
     (if xhr
       (.abort xhr)))
 
 (defn abort-and-restart-xhr-if-required
-  [{:keys [xhr]} matching-planet-in-list?]
+  [{:keys [xhr matching-planet-in-list?]}]
   (if xhr
     (if matching-planet-in-list?
       ; abort request if there is a match
@@ -72,6 +65,8 @@
      :sith/master-id
      :sith/master-remote-id])
   Object
+  (componentWillMount [this]
+    (om/update-state! this merge {:css-class "css-slot"}))
   (componentDidMount [this]
     (let [{:keys [sith/id sith/remote-id] :as sith} (om/props this)]
       (if (not (nil? remote-id))
@@ -80,32 +75,34 @@
                       [~[:siths/by-id id]]]))))    
   (componentWillReceiveProps
     [this nextProps]
-    (let [{:keys [sith/remote-id]} (om/props this)
+    (let [{:keys [sith/remote-id sith/name sith/homeworld obi-wan-planet matching-planet-in-list?]} (om/props this)
           next-remote-id (:sith/remote-id nextProps)
-          remote-id-changed? (and (not (nil? next-remote-id))(not (= remote-id next-remote-id)))]
-      (om/update-state! this merge {:remote-id-changed? remote-id-changed?})))
+          next-name (:sith/name nextProps)
+          remote-id-changed? (and (not (nil? next-remote-id))
+                                  (not (= remote-id next-remote-id)))
+          populated-from-remote? (not (= name next-name))]
+      (om/update-state! this merge {:remote-id-changed? remote-id-changed?
+                                    :populated-from-remote? populated-from-remote?
+                                    :matching-planet-in-list? matching-planet-in-list?
+                                    :css-class (if (and (not (nil? homeworld)) 
+                                                        (= homeworld obi-wan-planet))
+                                                 "css-slot homeworld-alert"
+                                                 "css-slot")})))
   (componentDidUpdate [this prevProps prevState]
-    (let [{:keys [sith/id 
-                  sith/remote-id
-                  sith/name
-                  matching-planet-in-list?] :as sith} (om/props this)
-          prev-remote-id (:sith/remote-id prevProps)
-          prev-name (:sith/name prevProps)
-          populated-from-remote? (not (= name prev-name))
-          populate-from-remote-callback (:populate-from-remote-callback (om/get-computed this))
-          {:keys [remote-id-changed?]} (om/get-state this)]
+    (let [{:keys [sith/id] :as sith} (om/props this)
+          {:keys [remote-id-changed? populated-from-remote? matching-planet-in-list?]} (om/get-state this)]
       (if remote-id-changed?
         (om/transact! this
                       `[(sith/populate-from-remote ~{:sith sith})
                       [~[:siths/by-id id]]]))
       (if populated-from-remote?
-        (populate-from-remote-callback id))
-      (abort-and-restart-xhr-if-required (om/get-state this) matching-planet-in-list?)))
+        ((:populate-from-remote-callback (om/get-computed this)) id))
+      (abort-and-restart-xhr-if-required (om/get-state this))))
   (componentWillUnmount [this]
     (abort-xhr (om/get-state this)))
   (render [this]
-    (let [{:keys [sith/id sith/remote-id sith/name sith/homeworld obi-wan-planet] :as props} (om/props this)]
-      (dom/li #js {:className (slot-css-class props)}
+    (let [{:keys [sith/name sith/homeworld] :as props} (om/props this)]
+      (dom/li #js {:className (:css-class (om/get-state this))}
           (dom/h3 nil name)
           (if-not (nil? homeworld)
             (dom/h6 nil (str "Homeworld: " homeworld)))))))
